@@ -11,22 +11,18 @@ let elapsedTime = 0;
 let mediaRecorder;
 let audioChunks = [];
 
-// === INIT MAP ===
-window.initMap = function (callback) {
-  const initial = path.length > 0 ? path[0] : { lat: 0, lng: 0 };
+// === INIT LEAFLET MAP ===
+function initMap(callback) {
+  map = L.map('map').setView([0, 0], 15);
 
-  map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 17,
-    center: initial,
-    mapTypeId: 'terrain'
-  });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
 
-  marker = new google.maps.Marker({
-    position: initial,
-    map,
-    title: "Start"
-  });
-// Try to get user location
+  marker = L.marker([0, 0]).addTo(map).bindPopup("Start").openPopup();
+
+  // Try to get user location
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       position => {
@@ -34,46 +30,24 @@ window.initMap = function (callback) {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
-        map.setCenter(userLocation);
-        marker.setPosition(userLocation);
+        map.setView(userLocation, 17);
+        marker.setLatLng(userLocation);
       },
       error => {
         console.warn("Geolocation failed or denied, using default.");
       }
     );
   }
+
   if (callback) callback();
-};
-let autoSaveInterval = null;
-
-function initRecoveredRoute() {
-  path = routeData.filter(e => e.type === "location").map(e => e.coords);
-  if (path.length > 0) {
-    map.setCenter(path[0]);
-    new google.maps.Polyline({
-      path,
-      geodesic: true,
-      strokeColor: "#00FF00",
-      strokeOpacity: 1.0,
-      strokeWeight: 2,
-      map: map
-    });
-  }
 }
-// const script = document.createElement('script');
-// script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyB4IoUFBPNGtVySKpFoqE9VITvGV7nkLHw&callback=initMap';
-// script.async = true;
-// script.defer = true;
-// document.head.appendChild(script);
 
+// === BACKUP & AUTOSAVE ===
+let autoSaveInterval = null;
 
 function startAutoBackup() {
   autoSaveInterval = setInterval(() => {
-    const backupData = {
-      routeData,
-      totalDistance,
-      elapsedTime
-    };
+    const backupData = { routeData, totalDistance, elapsedTime };
     localStorage.setItem("route_backup", JSON.stringify(backupData));
     console.log("🔄 Auto-saved route progress.");
   }, 20000);
@@ -84,124 +58,10 @@ function stopAutoBackup() {
   localStorage.removeItem("route_backup");
   console.log("✅ Auto-backup stopped and cleared.");
 }
-function Summary() {
-  alert(`🏁 Route Completed!
-Total Distance: ${totalDistance.toFixed(2)} km
-Total Time: ${document.getElementById("timer").textContent}`);
-}
 
-
-// === TRACKING ===
-window.startTracking = function () {
-  startAutoBackup(); // start auto-saving every 20s
-
-  if (navigator.geolocation) {
-    watchId = navigator.geolocation.watchPosition(
-      position => {
-        const { latitude, longitude, accuracy } = position.coords;
-
-        if (accuracy > 25) return;
-        if (lastCoords) {
-          const dist = haversineDistance(lastCoords, { lat: latitude, lng: longitude });
-          if (dist > 0.2) return;
-        }
-
-        if (!isPaused) {
-          const latLng = { lat: latitude, lng: longitude };
-
-          if (lastCoords) {
-            const dist = haversineDistance(lastCoords, latLng);
-            totalDistance += dist;
-            document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
-            document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
-
-          }
-
-          lastCoords = latLng;
-          path.push(latLng);
-          marker.setPosition(latLng);
-          map.panTo(latLng);
-
-          new google.maps.Polyline({
-            path,
-            geodesic: true,
-            strokeColor: "#00FF00",
-            strokeOpacity: 1.0,
-            strokeWeight: 2,
-            map
-          });
-
-          routeData.push({
-            type: "location",
-            timestamp: Date.now(),
-            coords: latLng
-          });
-        }
-      },
-      err => console.error("GPS error:", err),
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-    );
-    startTimer();
-  } else {
-    alert("Geolocation not supported");
-  }
-};
-
-
-window.stopTracking = function () {
-  if (watchId) navigator.geolocation.clearWatch(watchId);
-  stopTimer();
-  stopAutoBackup();
-  
-  const wantsToSave = confirm("💾 Do you want to save this route?");
-  if (wantsToSave) {
-    saveSession(); // Save session properly
-  }
-  Summary(); //  nice summary
-  resetApp(); // Clean reset after saving or not
-};
-
-window.togglePause = function () {
-  isPaused = !isPaused;
-  document.getElementById("pauseButtonLabel").textContent = isPaused ? "Resume" : "Pause";
-  if (!isPaused) {
-    startTime = Date.now() - elapsedTime;
-    timerInterval = setInterval(updateTimerDisplay, 1000);
-  } else {
-    clearInterval(timerInterval);
-  }
-};
-
-function resetApp() {
-  routeData = [];
-  path = [];
-  lastCoords = null;
-  totalDistance = 0;
-  elapsedTime = 0;
-  startTime = null;
-  isPaused = false;
-
-  document.getElementById("distance").textContent = "0.00 km";
-  document.getElementById("timer").textContent = "00:00:00";
-
-  document.getElementById("liveDistance").textContent = "0.00 km"; // ✅ reset floating distance
-  document.getElementById("liveTimer").textContent = "00:00:00";   // ✅ reset floating timer
-
-  if (map && marker) {
-    marker.setPosition({ lat: 0, lng: 0 });
-    map.setCenter({ lat: 0, lng: 0 });
-    map.setZoom(17);
-  }
-
-  stopAutoBackup();
-  localStorage.removeItem("route_backup");
-
-  console.log("🧹 App reset — ready for a new session!");
-}
-
-
+// === TIMER ===
 function startTimer() {
-  elapsedTime = 0; // important
+  elapsedTime = 0;
   startTime = Date.now();
   clearInterval(timerInterval);
   updateTimerDisplay();
@@ -219,13 +79,10 @@ function updateTimerDisplay() {
   const hrs = Math.floor(elapsedTime / (1000 * 60 * 60));
   const mins = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
   const secs = Math.floor((elapsedTime % (1000 * 60)) / 1000);
-
-  const formatted = `${pad(hrs)}:${pad(mins)}:${pad(secs)}`; // ✅ Create formatted string!
-
+  const formatted = `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
   document.getElementById("timer").textContent = formatted;
   document.getElementById("liveTimer").textContent = formatted;
 }
-
 
 function pad(n) {
   return n.toString().padStart(2, "0");
@@ -240,6 +97,298 @@ function haversineDistance(coord1, coord2) {
   const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(coord1.lat)) * Math.cos(toRad(coord2.lat)) * Math.sin(dLng / 2) ** 2;
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
+
+// === ROUTE TRACKING ===
+window.startTracking = function () {
+  startAutoBackup();
+
+  if (navigator.geolocation) {
+    watchId = navigator.geolocation.watchPosition(
+      position => {
+        const { latitude, longitude, accuracy } = position.coords;
+        if (accuracy > 25) return;
+        const latLng = { lat: latitude, lng: longitude };
+        if (lastCoords) {
+          const dist = haversineDistance(lastCoords, latLng);
+          if (dist > 0.2) return;
+          totalDistance += dist;
+        }
+
+        lastCoords = latLng;
+        path.push(latLng);
+        marker.setLatLng(latLng);
+        map.panTo(latLng);
+        L.polyline(path, { color: 'green' }).addTo(map);
+
+        routeData.push({ type: "location", timestamp: Date.now(), coords: latLng });
+        document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
+        document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
+      },
+      err => console.error("GPS error:", err),
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+    );
+    startTimer();
+  } else {
+    alert("Geolocation not supported");
+  }
+};
+
+window.stopTracking = function () {
+  if (watchId) navigator.geolocation.clearWatch(watchId);
+  stopTimer();
+  stopAutoBackup();
+  const wantsToSave = confirm("💾 Do you want to save this route?");
+  if (wantsToSave) saveSession();
+  alert(`🏁 Route Completed! Total Distance: ${totalDistance.toFixed(2)} km`);
+  resetApp();
+};
+
+function resetApp() {
+  routeData = [];
+  path = [];
+  lastCoords = null;
+  totalDistance = 0;
+  elapsedTime = 0;
+  startTime = null;
+  isPaused = false;
+  document.getElementById("distance").textContent = "0.00 km";
+  document.getElementById("timer").textContent = "00:00:00";
+  document.getElementById("liveDistance").textContent = "0.00 km";
+  document.getElementById("liveTimer").textContent = "00:00:00";
+  localStorage.removeItem("route_backup");
+  map.setView([0, 0], 15);
+  console.log("🧹 App reset.");
+}
+
+// === INIT MAP ===
+// window.initMap = function (callback) {
+//   const initial = path.length > 0 ? path[0] : { lat: 0, lng: 0 };
+
+//   map = new google.maps.Map(document.getElementById("map"), {
+//     zoom: 17,
+//     center: initial,
+//     mapTypeId: 'terrain'
+//   });
+
+//   marker = new google.maps.Marker({
+//     position: initial,
+//     map,
+//     title: "Start"
+//   });
+// // Try to get user location
+//   if (navigator.geolocation) {
+//     navigator.geolocation.getCurrentPosition(
+//       position => {
+//         const userLocation = {
+//           lat: position.coords.latitude,
+//           lng: position.coords.longitude
+//         };
+//         map.setCenter(userLocation);
+//         marker.setPosition(userLocation);
+//       },
+//       error => {
+//         console.warn("Geolocation failed or denied, using default.");
+//       }
+//     );
+//   }
+//   if (callback) callback();
+// };
+// let autoSaveInterval = null;
+
+// function initRecoveredRoute() {
+//   path = routeData.filter(e => e.type === "location").map(e => e.coords);
+//   if (path.length > 0) {
+//     map.setCenter(path[0]);
+//     new google.maps.Polyline({
+//       path,
+//       geodesic: true,
+//       strokeColor: "#00FF00",
+//       strokeOpacity: 1.0,
+//       strokeWeight: 2,
+//       map: map
+//     });
+//   }
+// }
+// // const script = document.createElement('script');
+// // script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyB4IoUFBPNGtVySKpFoqE9VITvGV7nkLHw&callback=initMap';
+// // script.async = true;
+// // script.defer = true;
+// // document.head.appendChild(script);
+
+
+// function startAutoBackup() {
+//   autoSaveInterval = setInterval(() => {
+//     const backupData = {
+//       routeData,
+//       totalDistance,
+//       elapsedTime
+//     };
+//     localStorage.setItem("route_backup", JSON.stringify(backupData));
+//     console.log("🔄 Auto-saved route progress.");
+//   }, 20000);
+// }
+
+// function stopAutoBackup() {
+//   clearInterval(autoSaveInterval);
+//   localStorage.removeItem("route_backup");
+//   console.log("✅ Auto-backup stopped and cleared.");
+// }
+function Summary() {
+  alert(`🏁 Route Completed!
+Total Distance: ${totalDistance.toFixed(2)} km
+Total Time: ${document.getElementById("timer").textContent}`);
+}
+
+
+// === TRACKING ===
+// window.startTracking = function () {
+//   startAutoBackup(); // start auto-saving every 20s
+
+//   if (navigator.geolocation) {
+//     watchId = navigator.geolocation.watchPosition(
+//       position => {
+//         const { latitude, longitude, accuracy } = position.coords;
+
+//         if (accuracy > 25) return;
+//         if (lastCoords) {
+//           const dist = haversineDistance(lastCoords, { lat: latitude, lng: longitude });
+//           if (dist > 0.2) return;
+//         }
+
+//         if (!isPaused) {
+//           const latLng = { lat: latitude, lng: longitude };
+
+//           if (lastCoords) {
+//             const dist = haversineDistance(lastCoords, latLng);
+//             totalDistance += dist;
+//             document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
+//             document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
+
+//           }
+
+//           lastCoords = latLng;
+//           path.push(latLng);
+//           marker.setPosition(latLng);
+//           map.panTo(latLng);
+
+//           new google.maps.Polyline({
+//             path,
+//             geodesic: true,
+//             strokeColor: "#00FF00",
+//             strokeOpacity: 1.0,
+//             strokeWeight: 2,
+//             map
+//           });
+
+//           routeData.push({
+//             type: "location",
+//             timestamp: Date.now(),
+//             coords: latLng
+//           });
+//         }
+//       },
+//       err => console.error("GPS error:", err),
+//       { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+//     );
+//     startTimer();
+//   } else {
+//     alert("Geolocation not supported");
+//   }
+// };
+
+
+// window.stopTracking = function () {
+//   if (watchId) navigator.geolocation.clearWatch(watchId);
+//   stopTimer();
+//   stopAutoBackup();
+  
+//   const wantsToSave = confirm("💾 Do you want to save this route?");
+//   if (wantsToSave) {
+//     saveSession(); // Save session properly
+//   }
+//   Summary(); //  nice summary
+//   resetApp(); // Clean reset after saving or not
+// };
+
+window.togglePause = function () {
+  isPaused = !isPaused;
+  document.getElementById("pauseButtonLabel").textContent = isPaused ? "Resume" : "Pause";
+  if (!isPaused) {
+    startTime = Date.now() - elapsedTime;
+    timerInterval = setInterval(updateTimerDisplay, 1000);
+  } else {
+    clearInterval(timerInterval);
+  }
+};
+
+// function resetApp() {
+//   routeData = [];
+//   path = [];
+//   lastCoords = null;
+//   totalDistance = 0;
+//   elapsedTime = 0;
+//   startTime = null;
+//   isPaused = false;
+
+//   document.getElementById("distance").textContent = "0.00 km";
+//   document.getElementById("timer").textContent = "00:00:00";
+
+//   document.getElementById("liveDistance").textContent = "0.00 km"; // ✅ reset floating distance
+//   document.getElementById("liveTimer").textContent = "00:00:00";   // ✅ reset floating timer
+
+//   if (map && marker) {
+//     marker.setPosition({ lat: 0, lng: 0 });
+//     map.setCenter({ lat: 0, lng: 0 });
+//     map.setZoom(17);
+//   }
+
+//   stopAutoBackup();
+//   localStorage.removeItem("route_backup");
+
+//   console.log("🧹 App reset — ready for a new session!");
+// }
+
+
+// function startTimer() {
+//   elapsedTime = 0; // important
+//   startTime = Date.now();
+//   clearInterval(timerInterval);
+//   updateTimerDisplay();
+//   timerInterval = setInterval(updateTimerDisplay, 1000);
+// }
+
+// function stopTimer() {
+//   clearInterval(timerInterval);
+//   updateTimerDisplay();
+// }
+
+// function updateTimerDisplay() {
+//   const now = Date.now();
+//   elapsedTime = now - startTime;
+//   const hrs = Math.floor(elapsedTime / (1000 * 60 * 60));
+//   const mins = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
+//   const secs = Math.floor((elapsedTime % (1000 * 60)) / 1000);
+
+//   const formatted = `${pad(hrs)}:${pad(mins)}:${pad(secs)}`; // ✅ Create formatted string!
+
+//   document.getElementById("timer").textContent = formatted;
+//   document.getElementById("liveTimer").textContent = formatted;
+// }
+
+
+function pad(n) {
+  return n.toString().padStart(2, "0");
+}
+
+// === DISTANCE ===
+// function haversineDistance(coord1, coord2) {
+//   const R = 6371;
+//   const toRad = deg => deg * Math.PI / 180;
+//   const dLat = toRad(coord2.lat - coord1.lat);
+//   const dLng = toRad(coord2.lng - coord1.lng);
+//   const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(coord1.lat)) * Math.cos(toRad(coord2.lat)) * Math.sin(dLng / 2) ** 2;
+//   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+// }
 
 // === MEDIA CAPTURE ===
 window.capturePhoto = () => document.getElementById("photoInput").click();
