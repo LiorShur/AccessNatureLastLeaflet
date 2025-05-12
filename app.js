@@ -802,30 +802,20 @@ const SummaryArchive = (() => {
     const item = getArchive().find(entry => entry.id === id);
     if (!item) return alert("Summary not found!");
 
-    // Convert HTML and base64 media into a Blob and open in new tab
     const blob = new Blob([item.html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     window.open(url, "_blank");
   }
-  
+
   function clearAll() {
-  const confirmClear = confirm("⚠️ This will delete all saved summaries permanently. Continue?");
-  if (confirmClear) {
-    localStorage.removeItem(STORAGE_KEY);
-    SummaryArchive.showArchiveBrowser(); // Refresh UI
-    alert("🧹 Archive cleared!");
-    toggleArchivePanel();
+    const confirmClear = confirm("⚠️ This will delete all saved summaries permanently. Continue?");
+    if (confirmClear) {
+      localStorage.removeItem(STORAGE_KEY);
+      showArchiveBrowser();
+      alert("🧹 Archive cleared!");
+      toggleArchivePanel();
+    }
   }
-}
-  
-function clearAllSummaries() {
-  const confirmClear = confirm("⚠️ Clear all archived summaries? This cannot be undone!");
-  if (confirmClear) {
-    localStorage.removeItem("summary_archive");
-    alert("✅ All archived summaries cleared!");
-    SummaryArchive.showArchiveBrowser(); // Refresh panel if visible
-  }
-}
 
   function showArchiveBrowser(containerId = "archivePanel") {
     const container = document.getElementById(containerId);
@@ -862,6 +852,7 @@ function clearAllSummaries() {
     clearAll
   };
 })();
+
 
 async function exportRouteSummary() {
   console.log("📦 Attempting route export...");
