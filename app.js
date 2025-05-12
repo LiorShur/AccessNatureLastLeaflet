@@ -20,7 +20,7 @@ function initMap(callback) {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  marker = L.marker([0, 0]).addTo(map).bindPopup("Start").openPopup();
+  marker = L.marker([0, 0], { title: "Start" }).addTo(map);
 
   // Try to get user location
   if (navigator.geolocation) {
@@ -34,13 +34,14 @@ function initMap(callback) {
         marker.setLatLng(userLocation);
       },
       error => {
-        console.warn("Geolocation failed or denied, using default.");
+        console.warn("Geolocation failed or denied, using default center.");
       }
     );
   }
 
   if (callback) callback();
 }
+
 
 // === BACKUP & AUTOSAVE ===
 let autoSaveInterval = null;
@@ -107,10 +108,12 @@ window.startTracking = function () {
       position => {
         const { latitude, longitude, accuracy } = position.coords;
         if (accuracy > 25) return;
+
         const latLng = { lat: latitude, lng: longitude };
+
         if (lastCoords) {
           const dist = haversineDistance(lastCoords, latLng);
-          if (dist > 0.2) return;
+          if (dist > 0.2) return; // skip GPS jumps
           totalDistance += dist;
         }
 
@@ -118,28 +121,42 @@ window.startTracking = function () {
         path.push(latLng);
         marker.setLatLng(latLng);
         map.panTo(latLng);
-        L.polyline(path, { color: 'green' }).addTo(map);
 
-        routeData.push({ type: "location", timestamp: Date.now(), coords: latLng });
+        // Draw new polyline for the path
+        if (path.length > 1) {
+          const segment = [path[path.length - 2], path[path.length - 1]];
+          L.polyline(segment, { color: 'green' }).addTo(map);
+        }
+
+        routeData.push({
+          type: "location",
+          timestamp: Date.now(),
+          coords: latLng
+        });
+
         document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
         document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
       },
       err => console.error("GPS error:", err),
       { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
     );
+
     startTimer();
   } else {
     alert("Geolocation not supported");
   }
 };
 
+
 window.stopTracking = function () {
   if (watchId) navigator.geolocation.clearWatch(watchId);
   stopTimer();
   stopAutoBackup();
+
   const wantsToSave = confirm("💾 Do you want to save this route?");
   if (wantsToSave) saveSession();
-  alert(`🏁 Route Completed! Total Distance: ${totalDistance.toFixed(2)} km`);
+
+  Summary(); // nice summary
   resetApp();
 };
 
@@ -151,22 +168,29 @@ function resetApp() {
   elapsedTime = 0;
   startTime = null;
   isPaused = false;
+
   document.getElementById("distance").textContent = "0.00 km";
   document.getElementById("timer").textContent = "00:00:00";
   document.getElementById("liveDistance").textContent = "0.00 km";
   document.getElementById("liveTimer").textContent = "00:00:00";
-  localStorage.removeItem("route_backup");
-  map.setView([0, 0], 15);
-  console.log("🧹 App reset.");
-}
 
+  localStorage.removeItem("route_backup");
+
+  // Reset map to initial state
+  if (map && marker) {
+    marker.setLatLng([0, 0]);
+    map.setView([0, 0], 15);
+  }
+
+  stopAutoBackup();
+  console.log("🧹 App reset — ready for a new session!");
+}
 
 function Summary() {
   alert(`🏁 Route Completed!
 Total Distance: ${totalDistance.toFixed(2)} km
 Total Time: ${document.getElementById("timer").textContent}`);
 }
-
 
 // === TRACKING ===
 window.togglePause = function () {
@@ -183,8 +207,6 @@ window.togglePause = function () {
 function pad(n) {
   return n.toString().padStart(2, "0");
 }
-
-// === DISTANCE ===
 
 // === MEDIA CAPTURE ===
 window.capturePhoto = () => document.getElementById("photoInput").click();
@@ -314,9 +336,9 @@ window.addEventListener("DOMContentLoaded", () => {
 let noteMarkers = []; // Global array to track note markers
 
 function showRouteDataOnMap() {
-  // Clear previous note markers first
+  // Clear existing note markers
   if (noteMarkers.length > 0) {
-    noteMarkers.forEach(marker => marker.setMap(null));
+    noteMarkers.forEach(m => map.removeLayer(m));
     noteMarkers = [];
   }
 
@@ -325,61 +347,46 @@ function showRouteDataOnMap() {
     return;
   }
 
-  const bounds = new google.maps.LatLngBounds();
+  const bounds = [];
 
   routeData.forEach(entry => {
     const { coords, type, content } = entry;
-    if (!coords) return; // Safety
+    if (!coords) return;
 
     if (type === "location") {
-      bounds.extend(coords);
-      return; // Skip simple location-only entries
+      bounds.push([coords.lat, coords.lng]);
+      return;
     }
 
-    let infoContent = "";
-
+    let popupContent = "";
     if (type === "text") {
-      infoContent = `<p>${content}</p>`;
+      popupContent = `<p>${content}</p>`;
     } else if (type === "photo") {
-      infoContent = `<img src="${content}" alt="Photo" style="width:150px" onclick="showMediaFullScreen('${content}', 'photo')">`;
+      popupContent = `<img src="${content}" style="width:150px" onclick="showMediaFullScreen('${content}', 'photo')">`;
     } else if (type === "audio") {
-      infoContent = `<audio controls src="${content}"></audio>`;
+      popupContent = `<audio controls src="${content}"></audio>`;
     } else if (type === "video") {
-      infoContent = `<video controls width="200" src="${content}" onclick="showMediaFullScreen('${content}', 'video')"></video>`;
+      popupContent = `<video controls width="200" src="${content}" onclick="showMediaFullScreen('${content}', 'video')"></video>`;
     }
 
-    const marker = new google.maps.Marker({
-  position: coords,
-  map: map,
-  label: type === "photo" ? "📸" :
-         type === "audio" ? "🎙️" :
-         type === "video" ? "🎬" : "📝"
-});
+    const iconLabel = type === "photo" ? "📸" :
+                      type === "audio" ? "🎙️" :
+                      type === "video" ? "🎬" : "📝";
 
-
-    const infoWindow = new google.maps.InfoWindow({
-      content: infoContent
-    });
-
-    marker.addListener("click", () => {
-      infoWindow.open(map, marker);
-    });
+    const marker = L.marker([coords.lat, coords.lng], {
+      title: iconLabel
+    }).addTo(map).bindPopup(popupContent);
 
     noteMarkers.push(marker);
-    bounds.extend(coords);
+    bounds.push([coords.lat, coords.lng]);
   });
 
-  // if (!bounds.isEmpty()) {
-  //   map.fitBounds(bounds);
-  // }
-  if (!bounds.isEmpty()) {
-  map.fitBounds(bounds);
-} else {
-  map.setZoom(17);
+  if (bounds.length > 0) {
+    map.fitBounds(bounds);
+  } else {
+    map.setZoom(17);
+  }
 }
-
-}
-
 
 // === FULLSCREEN MEDIA VIEWER ===
 window.showMediaFullScreen = function (content, type) {
@@ -427,8 +434,6 @@ window.addEventListener("beforeunload", function (e) {
   }
 });
 
-
-
 window.saveSession = function () {
   console.log("🔍 Attempting to save session...");
 
@@ -467,6 +472,7 @@ window.saveSession = function () {
 };
 
 
+
 // === LOAD SESSION LIST ===
 window.loadSavedSessions = function () {
   const list = document.getElementById("savedSessionsList");
@@ -495,40 +501,42 @@ window.loadSession = function (index) {
   }
 
   routeData = session.data;
-  console.log("Session loaded. routeData:", routeData);
-
   totalDistance = parseFloat(session.distance);
   elapsedTime = 0;
   lastCoords = null;
 
-  path = session.data.filter(e => e.type === "location").map(e => e.coords);
+  path = routeData.filter(e => e.type === "location").map(e => e.coords);
 
   document.getElementById("timer").textContent = session.time;
   document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
+  document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
 
   initMap(() => {
     drawSavedRoutePath();
     showRouteDataOnMap();
   });
-  document.getElementById("exportSummaryBtn").disabled = false;
 
+  document.getElementById("exportSummaryBtn").disabled = false;
 };
 
 function drawSavedRoutePath() {
-  if (path.length > 1) {
-    new google.maps.Polyline({
-      path,
-      geodesic: true,
-      strokeColor: "#00FF00",
-      strokeOpacity: 1.0,
-      strokeWeight: 3,
-      map
-    });
+  if (!map || path.length === 0) return;
 
-    map.setCenter(path[0]);
-    marker.setPosition(path[0]);
+  const polyline = L.polyline(path, {
+    color: 'green',
+    weight: 3
+  }).addTo(map);
+
+  const bounds = polyline.getBounds();
+  map.fitBounds(bounds);
+
+  if (!marker) {
+    marker = L.marker(path[0]).addTo(map).bindPopup("Start").openPopup();
+  } else {
+    marker.setLatLng(path[0]);
   }
 }
+
 function loadMostRecentSession(callback) {
   const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
   if (sessions.length === 0) {
@@ -540,9 +548,10 @@ function loadMostRecentSession(callback) {
   routeData = mostRecent.data;
   totalDistance = parseFloat(mostRecent.distance);
   elapsedTime = 0;
+
   path = routeData.filter(e => e.type === "location").map(e => e.coords);
 
-  // Update displays
+  // Update UI
   document.getElementById("timer").textContent = mostRecent.time;
   document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
   document.getElementById("liveTimer").textContent = mostRecent.time;
@@ -555,9 +564,10 @@ function loadMostRecentSession(callback) {
       if (typeof callback === "function") callback();
     });
   } else if (typeof callback === "function") {
-    callback(); // export can proceed anyway
+    callback(); // proceed even if map doesn't load
   }
 }
+
 function toggleExportDropdown() {
   const dropdown = document.getElementById("exportDropdown");
   if (!dropdown) return;
@@ -581,6 +591,18 @@ window.exportData = function () {
 };
 
 // === EXPORT GPX ===
+window.exportData = function () {
+  const fileName = `route-${new Date().toISOString()}.json`;
+  const blob = new Blob([JSON.stringify(routeData, null, 2)], { type: "application/json" });
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 window.exportGPX = function () {
   let gpx = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="NatureTracker" xmlns="http://www.topografix.com/GPX/1/1">
@@ -612,10 +634,14 @@ window.exportPDF = async function () {
   let y = 10;
 
   doc.setFontSize(16);
-  doc.text("Nature Tracker - Route Summary", 10, y); y += 10;
+  doc.text("Nature Tracker - Route Summary", 10, y);
+  y += 10;
 
   for (const entry of routeData) {
-    if (y > 260) { doc.addPage(); y = 10; }
+    if (y > 260) {
+      doc.addPage();
+      y = 10;
+    }
 
     doc.setFontSize(12);
     doc.text(`Type: ${entry.type}`, 10, y); y += 6;
