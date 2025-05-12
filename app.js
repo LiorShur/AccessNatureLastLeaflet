@@ -1085,7 +1085,7 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
         photoCounter++;
       } else if (entry.type === "audio") {
         const base64Data = entry.content.split(",")[1];
-        audioFolder.file(`audio/audio${audioCounter}.webm`, base64Data, { base64: true });
+        audioFolder.file(`audio${audioCounter}.webm`, base64Data, { base64: true });
         markersJS += `
 L.marker([${entry.coords.lat}, ${entry.coords.lng}])
   .addTo(map)
@@ -1095,13 +1095,8 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
       }
     }
 
-    // ✅ SKIP if no GPS points
-    if (pathCoords.length === 0) {
-      console.warn(`⚠️ Session "${session.name}" has no GPS points. Skipping export.`);
-      continue;
-    }
+    if (pathCoords.length === 0) continue;
 
-    // ✅ Generate the session's index.html
     const sessionHTML = `
 <!DOCTYPE html>
 <html lang="en">
@@ -1112,37 +1107,29 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 <style>
-#map { height: 100vh; margin: 0; }
-#summaryPanel {
-  position: absolute; top: 10px; right: 10px;
-  background: white; padding: 10px; border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3); font-size: 14px;
-}
+  body { margin: 0; }
+  #map { height: 100vh; }
 </style>
 </head>
 <body>
 <div id="map"></div>
-<div id="summaryPanel">
-  <b>Distance:</b> ${session.distance} km<br>
-  <b>Photos:</b> ${photoCounter - 1}<br>
-  <b>Notes:</b> ${noteCounter - 1}<br>
-  <b>Audios:</b> ${audioCounter - 1}<br>
-</div>
 <script>
-var map = L.map('map').setView([${pathCoords[0][0]}, ${pathCoords[0][1]}], 15);
+var map = L.map('map');
+var bounds = L.latLngBounds(${JSON.stringify(pathCoords)});
+map.fitBounds(bounds);
+
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-var route = L.polyline(${JSON.stringify(pathCoords)}, { color: 'blue' }).addTo(map);
-map.fitBounds(route.getBounds());
+L.polyline(${JSON.stringify(pathCoords)}, { color: 'blue' }).addTo(map);
 
 ${markersJS}
 
 // Fullscreen photo viewer
 function showFullScreen(img) {
-  var overlay = document.createElement("div");
+  const overlay = document.createElement("div");
   overlay.style.position = "fixed";
   overlay.style.top = 0;
   overlay.style.left = 0;
@@ -1155,7 +1142,7 @@ function showFullScreen(img) {
   overlay.style.zIndex = "9999";
   overlay.onclick = () => document.body.removeChild(overlay);
 
-  var fullImg = document.createElement("img");
+  const fullImg = document.createElement("img");
   fullImg.src = img.src;
   fullImg.style.maxWidth = "90%";
   fullImg.style.maxHeight = "90%";
@@ -1178,69 +1165,74 @@ function showFullScreen(img) {
     });
   }
 
-  // ✅ Build final explorer.html
+  // Build route explorer homepage
   let explorerHTML = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Route Explorer</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
-  h1 { color: #4CAF50; }
-  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-  th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
-  th { background-color: #4CAF50; color: white; }
-  tr:hover { background-color: #f1f1f1; }
-  a.button {
-    background: #2196F3; color: white; padding: 8px 14px;
-    border-radius: 4px; text-decoration: none;
-    display: inline-block;
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>Route Explorer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+    h1 { color: #2c3e50; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border-bottom: 1px solid #ccc; text-align: left; }
+    th { background: #3498db; color: white; }
+    tr:hover { background: #eaf4fc; }
+    a.button {
+      background: #2980b9;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 4px;
+      text-decoration: none;
+    }
+  </style>
 </head>
 <body>
-
-<h1>📍 Your Route Explorer</h1>
-
-<table id="routesTable">
-<thead>
-<tr><th>Route Name</th><th>Distance</th><th>Time</th><th>Date</th><th>View</th></tr>
-</thead>
-<tbody>
+  <h1>📦 Exported Route Summaries</h1>
+  <table>
+    <thead>
+      <tr><th>Name</th><th>Distance</th><th>Time</th><th>Date</th><th>View</th></tr>
+    </thead>
+    <tbody>
 `;
 
-  explorerTableRows.forEach(route => {
+  explorerTableRows.forEach(row => {
     explorerHTML += `
 <tr>
-  <td>${route.name}</td>
-  <td>${route.distance} km</td>
-  <td>${route.time}</td>
-  <td>${route.date.split("T")[0]}</td>
-  <td><a class="button" href="routes/${route.folder}/index.html" target="_blank">View Map</a></td>
-</tr>
-`;
+  <td>${row.name}</td>
+  <td>${row.distance} km</td>
+  <td>${row.time}</td>
+  <td>${row.date.split("T")[0]}</td>
+  <td><a class="button" href="routes/${row.folder}/index.html" target="_blank">Open</a></td>
+</tr>`;
   });
 
   explorerHTML += `
-</tbody>
-</table>
-
+    </tbody>
+  </table>
 </body>
 </html>
 `;
 
   zip.file("explorer.html", explorerHTML);
 
-  // ✅ Finally, generate and download ZIP
-  const blob = await zip.generateAsync({ type: "blob" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `nature-explorer-${Date.now()}.zip`;
-  a.click();
+  // Final ZIP export
+  try {
+    const blob = await zip.generateAsync({ type: "blob" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `all-routes-${Date.now()}.zip`;
+    a.click();
+    console.log("✅ All routes exported successfully.");
+  } catch (e) {
+    console.error("❌ Failed to export all routes:", e);
+    alert("❌ Export failed.");
+  }
 }
+
 function openHistory() {
   const list = document.getElementById("historyList");
   list.innerHTML = "";
