@@ -853,20 +853,17 @@ const SummaryArchive = (() => {
   };
 })();
 
-
 async function exportRouteSummary() {
   console.log("📦 Attempting route export...");
 
   if (!routeData || !Array.isArray(routeData) || routeData.length === 0) {
     alert("⚠️ No route data available to export. Please track or load a route first.");
-    console.warn("❌ Export aborted: routeData is missing or empty.");
     return;
   }
 
   const hasLocation = routeData.some(entry => entry.type === "location");
   if (!hasLocation) {
-    alert("⚠️ No location data found. Start a route and record some movement first!");
-    console.warn("❌ Export aborted: No GPS points in routeData.");
+    alert("⚠️ No location data found in this session.");
     return;
   }
 
@@ -919,46 +916,38 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
     }
   }
 
-  // ✅ Leaflet bounds fix
   const boundsVar = JSON.stringify(pathCoords);
 
   const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>${name}</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-<style>
-  body { margin: 0; font-family: Arial, sans-serif; }
-  #map { height: 60vh; }
-  #summaryPanel {
-    padding: 20px;
-    background: #f7f7f7;
-  }
-  #routeTitle {
-    font-size: 24px;
-    margin-bottom: 10px;
-    color: #2c3e50;
-  }
-  .stats {
-    margin-top: 10px;
-  }
-  .stats b {
-    display: inline-block;
-    width: 120px;
-  }
-  #description {
-    margin-top: 20px;
-  }
-  #description textarea {
-    width: 100%;
-    height: 100px;
-    font-size: 14px;
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>${name}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; }
+    #map { height: 60vh; }
+    #summaryPanel {
+      padding: 20px;
+      background: #f7f7f7;
+    }
+    #routeTitle {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+    .stats { margin-top: 10px; }
+    .stats b { display: inline-block; width: 120px; }
+    #description { margin-top: 20px; }
+    #description textarea {
+      width: 100%;
+      height: 100px;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
 <div id="summaryPanel">
@@ -987,13 +976,13 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-var route = L.polyline(${boundsVar}, { color: 'blue' }).addTo(map);
+L.polyline(${JSON.stringify(pathCoords)}, { color: 'blue' }).addTo(map);
 
 ${markersJS}
 
 // Fullscreen photo viewer
 function showFullScreen(img) {
-  var overlay = document.createElement("div");
+  const overlay = document.createElement("div");
   overlay.style.position = "fixed";
   overlay.style.top = 0;
   overlay.style.left = 0;
@@ -1006,7 +995,7 @@ function showFullScreen(img) {
   overlay.style.zIndex = "9999";
   overlay.onclick = () => document.body.removeChild(overlay);
 
-  var fullImg = document.createElement("img");
+  const fullImg = document.createElement("img");
   fullImg.src = img.src;
   fullImg.style.maxWidth = "90%";
   fullImg.style.maxHeight = "90%";
@@ -1018,7 +1007,7 @@ function showFullScreen(img) {
 </html>
 `;
 
-  // Store media for internal archive (optional)
+  // Optional: Save to local archive
   const mediaForArchive = {};
   routeData.forEach((entry, i) => {
     if (entry.type === "photo") {
@@ -1028,8 +1017,8 @@ function showFullScreen(img) {
       mediaForArchive[`note${i + 1}.txt`] = entry.content;
     }
   });
-
   SummaryArchive.saveToArchive(name, htmlContent, mediaForArchive);
+
   zip.file("index.html", htmlContent);
 
   try {
@@ -1039,7 +1028,6 @@ function showFullScreen(img) {
     a.href = url;
     a.download = `route-summary-${Date.now()}.zip`;
     a.click();
-
     console.log("✅ Route summary exported successfully.");
   } catch (e) {
     console.error("❌ Export failed:", e);
