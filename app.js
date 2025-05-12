@@ -471,8 +471,6 @@ window.saveSession = function () {
   }
 };
 
-
-
 // === LOAD SESSION LIST ===
 window.loadSavedSessions = function () {
   const list = document.getElementById("savedSessionsList");
@@ -694,16 +692,15 @@ window.onload = function () {
       console.log("✅ Shared route loaded.");
 
       path = routeData.filter(e => e.type === "location").map(e => e.coords);
+
       initMap(() => {
         drawSavedRoutePath();
         showRouteDataOnMap();
       });
-
     } catch (e) {
-      console.error("❌ Invalid share data:", e);
+      console.error("❌ Invalid shared data:", e);
       alert("⚠️ Failed to load shared route.");
     }
-
   } else {
     const backup = localStorage.getItem("route_backup");
     if (backup) {
@@ -720,6 +717,7 @@ window.onload = function () {
           elapsedTime = backupData.elapsedTime || 0;
 
           path = routeData.filter(e => e.type === "location").map(e => e.coords);
+
           initMap(() => {
             drawSavedRoutePath();
             showRouteDataOnMap();
@@ -733,29 +731,26 @@ window.onload = function () {
           startTimer();
           startAutoBackup();
 
-          console.log("✅ Route successfully restored from backup.");
           alert("✅ Route recovered successfully!");
-
         } catch (e) {
-          console.error("❌ Failed to restore from backup:", e);
-          alert("⚠️ Failed to restore previous route. It may be corrupted.");
+          console.error("❌ Failed to restore backup:", e);
+          alert("⚠️ Could not restore saved backup. Data might be corrupted.");
           resetApp();
           localStorage.removeItem("route_backup");
         }
       } else {
-        console.log("🧹 User declined backup restore. Clearing backup...");
         localStorage.removeItem("route_backup");
         resetApp();
       }
     } else {
-      console.log("ℹ️ No backup found. Loading saved sessions.");
+      console.log("ℹ️ No backup found. Loading session list.");
       loadSavedSessions();
-      if (!map) initMap(); // ✅ This is where you add the fallback map init
+      if (!map) initMap(); // Fallback map init if no session or route loaded
     }
   }
-  if (!map) {
-  initMap(); // Ensure the map initializes even if no session or shared route is loaded
-}
+
+  // Ensure map initializes if nothing was triggered above
+  if (!map) initMap();
 };
 
 // === SUMMARY ARCHIVE MODULE ===
