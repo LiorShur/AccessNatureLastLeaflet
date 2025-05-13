@@ -49,7 +49,11 @@ let audioChunks = [];
 //   if (callback) callback();
 // }
 function initMap(callback) {
-  // Initialize the map
+  //   // If a map already exists on this container, remove it
+  if (map && map.remove) {
+    map.remove(); // Clean up the previous map instance
+  }
+//   // Now safely initialize a new map
   map = L.map('map').setView([0, 0], 15);
 
   // Add OpenStreetMap tiles
