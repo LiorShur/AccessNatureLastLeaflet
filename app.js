@@ -35,9 +35,11 @@ function initMap(callback) {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
-        map.setView(userLocation, 17);
-        marker.setLatLng(userLocation);
-      },
+        // Delay to ensure map has rendered before setting view
+    setTimeout(() => {
+      map.setView(userLocation, 17);
+      marker.setLatLng(userLocation);
+    }, 100);
       error => {
         console.warn("Geolocation failed or denied, using default center.");
       }
