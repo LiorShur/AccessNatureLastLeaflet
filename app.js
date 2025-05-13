@@ -1102,29 +1102,118 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
 
     if (pathCoords.length === 0) continue;
 
-    const sessionHTML = `
+//     const sessionHTML = `
+// <!DOCTYPE html>
+// <html lang="en">
+// <head>
+// <meta charset="UTF-8">
+// <title>${session.name}</title>
+// <meta name="viewport" content="width=device-width, initial-scale=1.0">
+// <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+// <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+// <style>
+//   body { margin: 0; }
+//   #map { height: 100vh; }
+// </style>
+// </head>
+// <body>
+// <div id="map"></div>
+// <script>
+// var map = L.map('map');
+// var bounds = L.latLngBounds(${JSON.stringify(pathCoords)});
+// map.fitBounds(bounds);
+
+// L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+//   maxZoom: 19,
+//   attribution: '&copy; OpenStreetMap contributors'
+// }).addTo(map);
+
+// L.polyline(${JSON.stringify(pathCoords)}, { color: 'blue' }).addTo(map);
+
+// ${markersJS}
+
+// // Fullscreen photo viewer
+// function showFullScreen(img) {
+//   const overlay = document.createElement("div");
+//   overlay.style.position = "fixed";
+//   overlay.style.top = 0;
+//   overlay.style.left = 0;
+//   overlay.style.width = "100%";
+//   overlay.style.height = "100%";
+//   overlay.style.background = "rgba(0,0,0,0.9)";
+//   overlay.style.display = "flex";
+//   overlay.style.alignItems = "center";
+//   overlay.style.justifyContent = "center";
+//   overlay.style.zIndex = "9999";
+//   overlay.onclick = () => document.body.removeChild(overlay);
+
+//   const fullImg = document.createElement("img");
+//   fullImg.src = img.src;
+//   fullImg.style.maxWidth = "90%";
+//   fullImg.style.maxHeight = "90%";
+//   overlay.appendChild(fullImg);
+//   document.body.appendChild(overlay);
+// }
+// </script>
+// </body>
+// </html>
+// `;
+
+      const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>${session.name}</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-<style>
-  body { margin: 0; }
-  #map { height: 100vh; }
-</style>
+  <meta charset="UTF-8">
+  <title>${name}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; }
+    #map { height: 60vh; }
+    #summaryPanel {
+      padding: 20px;
+      background: #f7f7f7;
+    }
+    #routeTitle {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+    .stats { margin-top: 10px; }
+    .stats b { display: inline-block; width: 120px; }
+    #description { margin-top: 20px; }
+    #description textarea {
+      width: 100%;
+      height: 100px;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
+<div id="summaryPanel">
+  <div id="routeTitle">📍 ${name}</div>
+  <div class="stats">
+    <div><b>Distance:</b> ${totalDistance.toFixed(2)} km</div>
+    <div><b>Time:</b> ${document.getElementById("timer").textContent}</div>
+    <div><b>Photos:</b> ${photoCounter - 1}</div>
+    <div><b>Notes:</b> ${noteCounter - 1}</div>
+    <div><b>Audios:</b> ${audioCounter - 1}</div>
+  </div>
+  <div id="description">
+    <h4>General Description:</h4>
+    <textarea placeholder="Add notes or observations about the route here..."></textarea>
+  </div>
+</div>
+
 <div id="map"></div>
 <script>
 var map = L.map('map');
-var bounds = L.latLngBounds(${JSON.stringify(pathCoords)});
+var bounds = L.latLngBounds(${boundsVar});
 map.fitBounds(bounds);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
+  maxZoom: 18,
   attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
