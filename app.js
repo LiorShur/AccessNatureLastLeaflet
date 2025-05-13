@@ -1087,87 +1087,176 @@ function showFullScreen(img) {
 }
 
 
-async function exportAllRoutes() {
-  const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
+// async function exportAllRoutes() {
+//   const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
 
-  if (sessions.length === 0) {
-    alert("No saved sessions to export!");
-    return;
-  }
+//   if (sessions.length === 0) {
+//     alert("No saved sessions to export!");
+//     return;
+//   }
 
-  const zip = new JSZip();
-  const explorerTableRows = [];
+//   const zip = new JSZip();
+//   const explorerTableRows = [];
 
-  for (const session of sessions) {
-    const folderName = session.name.toLowerCase().replace(/\s+/g, "-");
-    const sessionFolder = zip.folder(`routes/${folderName}`);
-    const notesFolder = sessionFolder.folder("notes");
-    const imagesFolder = sessionFolder.folder("images");
-    const audioFolder = sessionFolder.folder("audio");
+//   for (const session of sessions) {
+//     const folderName = session.name.toLowerCase().replace(/\s+/g, "-");
+//     const sessionFolder = zip.folder(`routes/${folderName}`);
+//     const notesFolder = sessionFolder.folder("notes");
+//     const imagesFolder = sessionFolder.folder("images");
+//     const audioFolder = sessionFolder.folder("audio");
 
-    let markersJS = "";
-    let pathCoords = [];
-    let noteCounter = 1;
-    let photoCounter = 1;
-    let audioCounter = 1;
+//     let markersJS = "";
+//     let pathCoords = [];
+//     let noteCounter = 1;
+//     let photoCounter = 1;
+//     let audioCounter = 1;
 
-    for (const entry of session.data) {
-      if (entry.type === "location") {
-        pathCoords.push([entry.coords.lat, entry.coords.lng]);
-      } else if (entry.type === "text") {
-        notesFolder.file(`note${noteCounter}.txt`, entry.content);
-        markersJS += `
-L.marker([${entry.coords.lat}, ${entry.coords.lng}])
-  .addTo(map)
-  .bindPopup("<b>Note ${noteCounter}</b><br>${entry.content}");
-`;
-        noteCounter++;
-      } else if (entry.type === "photo") {
-        const base64Data = entry.content.split(",")[1];
-        imagesFolder.file(`photo${photoCounter}.jpg`, base64Data, { base64: true });
-        markersJS += `
-L.marker([${entry.coords.lat}, ${entry.coords.lng}])
-  .addTo(map)
-  .bindPopup("<b>Photo ${photoCounter}</b><br><img src='images/photo${photoCounter}.jpg' style='width:200px' onclick='showFullScreen(this)'>");
-`;
-        photoCounter++;
-      } else if (entry.type === "audio") {
-        const base64Data = entry.content.split(",")[1];
-        audioFolder.file(`audio${audioCounter}.webm`, base64Data, { base64: true });
-        markersJS += `
-L.marker([${entry.coords.lat}, ${entry.coords.lng}])
-  .addTo(map)
-  .bindPopup("<b>Audio ${audioCounter}</b><br><audio controls src='audio/audio${audioCounter}.webm'></audio>");
-`;
-        audioCounter++;
-      }
-    }
+//     for (const entry of session.data) {
+//       if (entry.type === "location") {
+//         pathCoords.push([entry.coords.lat, entry.coords.lng]);
+//       } else if (entry.type === "text") {
+//         notesFolder.file(`note${noteCounter}.txt`, entry.content);
+//         markersJS += `
+// L.marker([${entry.coords.lat}, ${entry.coords.lng}])
+//   .addTo(map)
+//   .bindPopup("<b>Note ${noteCounter}</b><br>${entry.content}");
+// `;
+//         noteCounter++;
+//       } else if (entry.type === "photo") {
+//         const base64Data = entry.content.split(",")[1];
+//         imagesFolder.file(`photo${photoCounter}.jpg`, base64Data, { base64: true });
+//         markersJS += `
+// L.marker([${entry.coords.lat}, ${entry.coords.lng}])
+//   .addTo(map)
+//   .bindPopup("<b>Photo ${photoCounter}</b><br><img src='images/photo${photoCounter}.jpg' style='width:200px' onclick='showFullScreen(this)'>");
+// `;
+//         photoCounter++;
+//       } else if (entry.type === "audio") {
+//         const base64Data = entry.content.split(",")[1];
+//         audioFolder.file(`audio${audioCounter}.webm`, base64Data, { base64: true });
+//         markersJS += `
+// L.marker([${entry.coords.lat}, ${entry.coords.lng}])
+//   .addTo(map)
+//   .bindPopup("<b>Audio ${audioCounter}</b><br><audio controls src='audio/audio${audioCounter}.webm'></audio>");
+// `;
+//         audioCounter++;
+//       }
+//     }
 
-    if (pathCoords.length === 0) continue;
+//     if (pathCoords.length === 0) continue;
 
-//     const sessionHTML = `
+// //     const sessionHTML = `
+// // <!DOCTYPE html>
+// // <html lang="en">
+// // <head>
+// // <meta charset="UTF-8">
+// // <title>${session.name}</title>
+// // <meta name="viewport" content="width=device-width, initial-scale=1.0">
+// // <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+// // <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+// // <style>
+// //   body { margin: 0; }
+// //   #map { height: 100vh; }
+// // </style>
+// // </head>
+// // <body>
+// // <div id="map"></div>
+// // <script>
+// // var map = L.map('map');
+// // var bounds = L.latLngBounds(${JSON.stringify(pathCoords)});
+// // map.fitBounds(bounds);
+
+// // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+// //   maxZoom: 19,
+// //   attribution: '&copy; OpenStreetMap contributors'
+// // }).addTo(map);
+
+// // L.polyline(${JSON.stringify(pathCoords)}, { color: 'blue' }).addTo(map);
+
+// // ${markersJS}
+
+// // // Fullscreen photo viewer
+// // function showFullScreen(img) {
+// //   const overlay = document.createElement("div");
+// //   overlay.style.position = "fixed";
+// //   overlay.style.top = 0;
+// //   overlay.style.left = 0;
+// //   overlay.style.width = "100%";
+// //   overlay.style.height = "100%";
+// //   overlay.style.background = "rgba(0,0,0,0.9)";
+// //   overlay.style.display = "flex";
+// //   overlay.style.alignItems = "center";
+// //   overlay.style.justifyContent = "center";
+// //   overlay.style.zIndex = "9999";
+// //   overlay.onclick = () => document.body.removeChild(overlay);
+
+// //   const fullImg = document.createElement("img");
+// //   fullImg.src = img.src;
+// //   fullImg.style.maxWidth = "90%";
+// //   fullImg.style.maxHeight = "90%";
+// //   overlay.appendChild(fullImg);
+// //   document.body.appendChild(overlay);
+// // }
+// // </script>
+// // </body>
+// // </html>
+// // 
+
+//       const htmlContent = `
 // <!DOCTYPE html>
 // <html lang="en">
 // <head>
-// <meta charset="UTF-8">
-// <title>${session.name}</title>
-// <meta name="viewport" content="width=device-width, initial-scale=1.0">
-// <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-// <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-// <style>
-//   body { margin: 0; }
-//   #map { height: 100vh; }
-// </style>
+//   <meta charset="UTF-8">
+//   <title>${name}</title>
+//   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+//   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+//   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+//   <style>
+//     body { margin: 0; font-family: Arial, sans-serif; }
+//     #map { height: 60vh; }
+//     #summaryPanel {
+//       padding: 20px;
+//       background: #f7f7f7;
+//     }
+//     #routeTitle {
+//       font-size: 24px;
+//       margin-bottom: 10px;
+//       color: #2c3e50;
+//     }
+//     .stats { margin-top: 10px; }
+//     .stats b { display: inline-block; width: 120px; }
+//     #description { margin-top: 20px; }
+//     #description textarea {
+//       width: 100%;
+//       height: 100px;
+//       font-size: 14px;
+//     }
+//   </style>
 // </head>
 // <body>
+// <div id="summaryPanel">
+//   <div id="routeTitle">📍 ${name}</div>
+//   <div class="stats">
+//     <div><b>Distance:</b> ${totalDistance.toFixed(2)} km</div>
+//     <div><b>Time:</b> ${document.getElementById("timer").textContent}</div>
+//     <div><b>Photos:</b> ${photoCounter - 1}</div>
+//     <div><b>Notes:</b> ${noteCounter - 1}</div>
+//     <div><b>Audios:</b> ${audioCounter - 1}</div>
+//   </div>
+//   <div id="description">
+//     <h4>General Description:</h4>
+//     <textarea placeholder="Add notes or observations about the route here..."></textarea>
+//   </div>
+// </div>
+
 // <div id="map"></div>
 // <script>
 // var map = L.map('map');
-// var bounds = L.latLngBounds(${JSON.stringify(pathCoords)});
+// var bounds = L.latLngBounds(${boundsVar});
 // map.fitBounds(bounds);
 
 // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-//   maxZoom: 19,
+//   maxZoom: 18,
 //   attribution: '&copy; OpenStreetMap contributors'
 // }).addTo(map);
 
@@ -1200,14 +1289,170 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
 // </script>
 // </body>
 // </html>
-// 
+// `;
+    
+//     sessionFolder.file("index.html", sessionHTML);
 
-      const htmlContent = `
+//     explorerTableRows.push({
+//       name: session.name,
+//       distance: session.distance,
+//       time: session.time,
+//       date: session.date,
+//       folder: folderName
+//     });
+//   }
+
+//   // Build route explorer homepage
+//   let explorerHTML = `
+// <!DOCTYPE html>
+// <html lang="en">
+// <head>
+//   <meta charset="UTF-8">
+//   <title>Route Explorer</title>
+//   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+//   <style>
+//     body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+//     h1 { color: #2c3e50; }
+//     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+//     th, td { padding: 10px; border-bottom: 1px solid #ccc; text-align: left; }
+//     th { background: #3498db; color: white; }
+//     tr:hover { background: #eaf4fc; }
+//     a.button {
+//       background: #2980b9;
+//       color: white;
+//       padding: 6px 12px;
+//       border-radius: 4px;
+//       text-decoration: none;
+//     }
+//   </style>
+// </head>
+// <body>
+//   <h1>📦 Exported Route Summaries</h1>
+//   <table>
+//     <thead>
+//       <tr><th>Name</th><th>Distance</th><th>Time</th><th>Date</th><th>View</th></tr>
+//     </thead>
+//     <tbody>
+// `;
+
+//   explorerTableRows.forEach(row => {
+//     explorerHTML += `
+// <tr>
+//   <td>${row.name}</td>
+//   <td>${row.distance} km</td>
+//   <td>${row.time}</td>
+//   <td>${row.date.split("T")[0]}</td>
+//   <td><a class="button" href="routes/${row.folder}/index.html" target="_blank">Open</a></td>
+// </tr>`;
+//   });
+
+//   explorerHTML += `
+//     </tbody>
+//   </table>
+// </body>
+// </html>
+// `;
+
+//   zip.file("explorer.html", explorerHTML);
+
+//   // Final ZIP export
+//   try {
+//     const blob = await zip.generateAsync({ type: "blob" });
+//     const url = URL.createObjectURL(blob);
+//     const a = document.createElement("a");
+//     a.href = url;
+//     a.download = `all-routes-${Date.now()}.zip`;
+//     a.click();
+//     console.log("✅ All routes exported successfully.");
+//   } catch (e) {
+//     console.error("❌ Failed to export all routes:", e);
+//     alert("❌ Export failed.");
+//   }
+// }
+
+// function openHistory() {
+//   const list = document.getElementById("historyList");
+//   list.innerHTML = "";
+//   const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
+
+//   sessions.forEach((session, index) => {
+//     const li = document.createElement("li");
+//     li.innerHTML = `<b>${session.name}</b> (${session.distance} km, ${session.time}) 
+//     <button onclick="loadSession(${index})">View</button>`;
+//     list.appendChild(li);
+//   });
+
+//   document.getElementById("historyPanel").style.display = "block";
+// }
+
+async function exportAllRoutes() {
+  const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
+
+  if (sessions.length === 0) {
+    alert("No saved sessions to export!");
+    return;
+  }
+
+  const zip = new JSZip();
+  const explorerTableRows = [];
+
+  for (const session of sessions) {
+    const folderName = session.name.toLowerCase().replace(/\s+/g, "-");
+    const sessionFolder = zip.folder(`routes/${folderName}`);
+    const notesFolder = sessionFolder.folder("notes");
+    const imagesFolder = sessionFolder.folder("images");
+    const audioFolder = sessionFolder.folder("audio");
+
+    let markersJS = "";
+    let pathCoords = [];
+    let noteCounter = 1;
+    let photoCounter = 1;
+    let audioCounter = 1;
+
+    for (const entry of session.data) {
+      if (entry.type === "location") {
+        pathCoords.push([entry.coords.lat, entry.coords.lng]);
+      } else if (entry.type === "text") {
+        notesFolder.file(`note${noteCounter}.txt`, entry.content);
+        markersJS += `
+L.marker([${entry.coords.lat}, ${entry.coords.lng}])
+  .addTo(map)
+  .bindPopup("<b>Note ${noteCounter}</b><br><pre>${entry.content}</pre>");
+`;
+        noteCounter++;
+      } else if (entry.type === "photo") {
+        const base64Data = entry.content.split(",")[1];
+        imagesFolder.file(`photo${photoCounter}.jpg`, base64Data, { base64: true });
+        markersJS += `
+L.marker([${entry.coords.lat}, ${entry.coords.lng}])
+  .addTo(map)
+  .bindPopup(\`
+    <b>Photo ${photoCounter}</b><br>
+    <img src='images/photo${photoCounter}.jpg' style='width:200px;cursor:pointer' onclick='showFullScreen(this)'>
+  \`);
+`;
+        photoCounter++;
+      } else if (entry.type === "audio") {
+        const base64Data = entry.content.split(",")[1];
+        audioFolder.file(`audio${audioCounter}.webm`, base64Data, { base64: true });
+        markersJS += `
+L.marker([${entry.coords.lat}, ${entry.coords.lng}])
+  .addTo(map)
+  .bindPopup("<b>Audio ${audioCounter}</b><br><audio controls src='audio/audio${audioCounter}.webm'></audio>");
+`;
+        audioCounter++;
+      }
+    }
+
+    if (pathCoords.length === 0) continue;
+
+    const boundsVar = JSON.stringify(pathCoords);
+    const sessionHTML = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>${name}</title>
+  <title>${session.name}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
@@ -1235,10 +1480,10 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
 </head>
 <body>
 <div id="summaryPanel">
-  <div id="routeTitle">📍 ${name}</div>
+  <div id="routeTitle">📍 ${session.name}</div>
   <div class="stats">
-    <div><b>Distance:</b> ${totalDistance.toFixed(2)} km</div>
-    <div><b>Time:</b> ${document.getElementById("timer").textContent}</div>
+    <div><b>Distance:</b> ${session.distance} km</div>
+    <div><b>Time:</b> ${session.time}</div>
     <div><b>Photos:</b> ${photoCounter - 1}</div>
     <div><b>Notes:</b> ${noteCounter - 1}</div>
     <div><b>Audios:</b> ${audioCounter - 1}</div>
@@ -1290,7 +1535,7 @@ function showFullScreen(img) {
 </body>
 </html>
 `;
-    
+
     sessionFolder.file("index.html", sessionHTML);
 
     explorerTableRows.push({
@@ -1302,7 +1547,7 @@ function showFullScreen(img) {
     });
   }
 
-  // Build route explorer homepage
+  // Build the explorer HTML
   let explorerHTML = `
 <!DOCTYPE html>
 <html lang="en">
@@ -1355,7 +1600,7 @@ function showFullScreen(img) {
 
   zip.file("explorer.html", explorerHTML);
 
-  // Final ZIP export
+  // Final ZIP
   try {
     const blob = await zip.generateAsync({ type: "blob" });
     const url = URL.createObjectURL(blob);
@@ -1370,20 +1615,6 @@ function showFullScreen(img) {
   }
 }
 
-function openHistory() {
-  const list = document.getElementById("historyList");
-  list.innerHTML = "";
-  const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
-
-  sessions.forEach((session, index) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<b>${session.name}</b> (${session.distance} km, ${session.time}) 
-    <button onclick="loadSession(${index})">View</button>`;
-    list.appendChild(li);
-  });
-
-  document.getElementById("historyPanel").style.display = "block";
-}
 
 function closeHistory() {
   document.getElementById("historyPanel").style.display = "none";
