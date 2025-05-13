@@ -12,22 +12,56 @@ let mediaRecorder;
 let audioChunks = [];
 
 // === INIT LEAFLET MAP ===
+// function initMap(callback) {
+//   // If a map already exists on this container, remove it
+//   if (map && map.remove) {
+//     map.remove(); // Clean up the previous map instance
+//   }
+//   // Now safely initialize a new map
+//   map = L.map('map').setView([0, 0], 15);
+
+//   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+//     maxZoom: 19,
+//     attribution: '&copy; OpenStreetMap contributors'
+//   }).addTo(map);
+
+//   marker = L.marker([0, 0], { title: "Start" }).addTo(map);
+
+//   // Try to get user location
+//   if (navigator.geolocation) {
+//     navigator.geolocation.getCurrentPosition(
+//       position => {
+//         const userLocation = {
+//           lat: position.coords.latitude,
+//           lng: position.coords.longitude
+//         };
+//         // Delay to ensure map has rendered before setting view
+//     setTimeout(() => {
+//       map.setView(userLocation, 17);
+//       marker.setLatLng(userLocation);
+//     }, 100);
+//       error => {
+//         console.warn("Geolocation failed or denied, using default center.");
+//       }
+//     );
+//   }
+
+//   if (callback) callback();
+// }
 function initMap(callback) {
-  // If a map already exists on this container, remove it
-  if (map && map.remove) {
-    map.remove(); // Clean up the previous map instance
-  }
-  // Now safely initialize a new map
+  // Initialize the map
   map = L.map('map').setView([0, 0], 15);
 
+  // Add OpenStreetMap tiles
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  marker = L.marker([0, 0], { title: "Start" }).addTo(map);
+  // Add initial marker at [0, 0]
+  marker = L.marker([0, 0]).addTo(map).bindPopup("Start").openPopup();
 
-  // Try to get user location
+  // Try to get user location and delay view update to avoid premature map interaction
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       position => {
@@ -35,19 +69,22 @@ function initMap(callback) {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
-        // Delay to ensure map has rendered before setting view
-    setTimeout(() => {
-      map.setView(userLocation, 17);
-      marker.setLatLng(userLocation);
-    }, 100);
+
+        // Use a short timeout to ensure map is ready before setting view
+        setTimeout(() => {
+          map.setView(userLocation, 17);
+          marker.setLatLng(userLocation);
+        }, 150); // slight delay to avoid _leaflet_pos error
+      },
       error => {
-        console.warn("Geolocation failed or denied, using default center.");
+        console.warn("Geolocation failed or denied, using default.");
       }
     );
   }
 
   if (callback) callback();
 }
+
 
 // === BACKUP & AUTOSAVE ===
 let autoSaveInterval = null;
