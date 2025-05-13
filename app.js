@@ -519,7 +519,7 @@ window.loadSession = function (index) {
     showRouteDataOnMap();
   });
 
-  document.getElementById("exportSummaryBtn").disabled = false;
+  //document.getElementById("exportSummaryBtn").disabled = false;
 };
 
 function drawSavedRoutePath() {
