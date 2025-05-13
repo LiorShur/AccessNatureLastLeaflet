@@ -13,6 +13,12 @@ let audioChunks = [];
 
 // === INIT LEAFLET MAP ===
 function initMap(callback) {
+  // If a map already exists on this container, remove it
+  if (map && map.remove) {
+    map.remove(); // Clean up the previous map instance
+  }
+
+  // Now safely initialize a new map
   map = L.map('map').setView([0, 0], 15);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -20,9 +26,9 @@ function initMap(callback) {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  marker = L.marker([0, 0], { title: "Start" }).addTo(map);
+  marker = L.marker([0, 0]).addTo(map).bindPopup("Start").openPopup();
 
-  // Try to get user location
+  // Center on user's location if available
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       position => {
@@ -34,13 +40,14 @@ function initMap(callback) {
         marker.setLatLng(userLocation);
       },
       error => {
-        console.warn("Geolocation failed or denied, using default center.");
+        console.warn("Geolocation failed or denied, using default.");
       }
     );
   }
 
   if (callback) callback();
 }
+
 
 
 // === BACKUP & AUTOSAVE ===
