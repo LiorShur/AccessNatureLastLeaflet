@@ -473,7 +473,7 @@ window.saveSession = function () {
     console.error("❌ Save failed. Storage full or data too large.", e);
     alert("❌ Could not save the route. Storage may be full. Try exporting and clearing older data.");
   }
-  initMap(callback);
+  initMap();
 };
 
 // === LOAD SESSION LIST ===
