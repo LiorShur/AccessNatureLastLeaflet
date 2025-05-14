@@ -159,23 +159,19 @@ window.startTracking = function () {
   }
 };
 
-
 window.stopTracking = function () {
   if (watchId) navigator.geolocation.clearWatch(watchId);
   stopTimer();
   stopAutoBackup();
 
   const wantsToSave = confirm("💾 Do you want to save this route?");
-  // if (wantsToSave) saveSession();
-
-  // Summary(); // nice summary
-  // resetApp();
-    if (wantsToSave) {
+  
+  if (wantsToSave) {
     saveSession();  // This function already handles reset and cleanup after save
     Summary();
     resetApp();
   } else {
-    const confirmDiscard = confirm("⚠️ Are you sure you want to discard this route? Click OK to discard or Escape to return to current session");
+    const confirmDiscard = confirm("⚠️ Are you sure you want to discard this route?");
     if (confirmDiscard) {
       Summary();
       resetApp();  // Only reset if they confirmed discarding
@@ -186,7 +182,7 @@ window.stopTracking = function () {
     }
   }
 };
-};
+
 
 function resetApp() {
   routeData = [];
