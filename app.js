@@ -104,7 +104,7 @@ function updateTimerDisplay() {
   const secs = Math.floor((elapsedTime % (1000 * 60)) / 1000);
   const formatted = `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
   document.getElementById("timer").textContent = formatted;
-  document.getElementById("liveTimer").textContent = formatted;
+  //document.getElementById("liveTimer").textContent = formatted;
 }
 
 function resumeTimer() {
