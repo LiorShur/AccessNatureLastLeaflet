@@ -175,7 +175,7 @@ window.startTracking = function () {
         });
 
         document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
-        document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
+        //document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
       },
       err => console.error("GPS error:", err),
       { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
@@ -223,8 +223,8 @@ function resetApp() {
 
   document.getElementById("distance").textContent = "0.00 km";
   document.getElementById("timer").textContent = "00:00:00";
-  document.getElementById("liveDistance").textContent = "0.00 km";
-  document.getElementById("liveTimer").textContent = "00:00:00";
+  //document.getElementById("liveDistance").textContent = "0.00 km";
+  //document.getElementById("liveTimer").textContent = "00:00:00";
 
   localStorage.removeItem("route_backup");
 
@@ -270,7 +270,7 @@ function resumeTracking() {
 
         routeData.push({ type: "location", timestamp: Date.now(), coords: latLng });
         document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
-        document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
+        //document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
       },
       err => console.error("GPS error:", err),
       { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
@@ -604,7 +604,7 @@ window.loadSession = function (index) {
 
   document.getElementById("timer").textContent = session.time;
   document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
-  document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
+  //document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
 
   initMap(() => {
     drawSavedRoutePath();
@@ -652,8 +652,8 @@ function loadMostRecentSession(callback) {
   // Update UI
   document.getElementById("timer").textContent = mostRecent.time;
   document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
-  document.getElementById("liveTimer").textContent = mostRecent.time;
-  document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
+  //document.getElementById("liveTimer").textContent = mostRecent.time;
+  //document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
 
   if (typeof initMap === "function") {
     initMap(() => {
@@ -832,7 +832,7 @@ window.onload = function () {
           });
 
           document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
-          document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
+          //document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
 
           startTime = Date.now() - elapsedTime;
           updateTimerDisplay();
