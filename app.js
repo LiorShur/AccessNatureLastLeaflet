@@ -251,7 +251,7 @@ function resumeTracking() {
 }
 
 function Summary() {
-  alert(`🏁 Route Completed!
+  alert(`🏁 Route Stats:
 Total Distance: ${totalDistance.toFixed(2)} km
 Total Time: ${document.getElementById("timer").textContent}`);
 }
@@ -523,7 +523,10 @@ window.saveSession = function () {
     localStorage.setItem("sessions", JSON.stringify(sessions));
     localStorage.removeItem("route_backup");
 
-    alert("✅ Route saved!");
+    alert("✅ Route saved!
+`🏁 Route Stats:
+Total Distance: ${totalDistance.toFixed(2)} km
+Total Time: ${document.getElementById("timer").textContent}`");
     loadSavedSessions();
     return true;
   } catch (e) {
