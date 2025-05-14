@@ -119,6 +119,14 @@ function haversineDistance(coord1, coord2) {
 }
 
 // === ROUTE TRACKING ===
+
+function disableStartButton() {
+  const btn = document.getElementById("startBtn");
+  if (btn) {
+    btn.disabled = true;
+  }
+}
+
 window.startTracking = function () {
   document.getElementById("startBtn").disabled = true;
   startAutoBackup();
@@ -582,6 +590,7 @@ window.loadSession = function (index) {
   initMap(() => {
     drawSavedRoutePath();
     showRouteDataOnMap();
+    disableStartButton();
   });
 
   //document.getElementById("exportSummaryBtn").disabled = false;
@@ -629,6 +638,7 @@ function loadMostRecentSession(callback) {
     initMap(() => {
       drawSavedRoutePath();
       showRouteDataOnMap();
+      disableStartButton();
       if (typeof callback === "function") callback();
     });
   } else if (typeof callback === "function") {
@@ -791,6 +801,7 @@ window.onload = function () {
           initMap(() => {
             drawSavedRoutePath();
             showRouteDataOnMap();
+            disableStartButton();
           });
 
           document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
@@ -800,6 +811,8 @@ window.onload = function () {
           updateTimerDisplay();
           startTimer();
           startAutoBackup();
+
+          disableStartButton();
 
           alert("✅ Route recovered successfully!");
         } catch (e) {
