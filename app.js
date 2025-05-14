@@ -821,7 +821,7 @@ window.onload = function () {
           initMap(() => {
             drawSavedRoutePath();
             showRouteDataOnMap();
-            setTrackingButtonsEnabled(false);
+            //setTrackingButtonsEnabled(false);
 
             //disableStartButton();
           });
@@ -831,11 +831,13 @@ window.onload = function () {
 
           startTime = Date.now() - elapsedTime;
           updateTimerDisplay();
+          setTrackingButtonsEnabled(true);
+          startAutoBackup();
           //startTimer();
           //updateTimerDisplay(); // ✅ only display the recovered time
           // Do not auto-start the timer or backup
-          startAutoBackup();
-          setTrackingButtonsEnabled(true);
+          
+          
 
           //disableStartButton();
 
