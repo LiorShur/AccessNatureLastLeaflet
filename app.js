@@ -11,6 +11,16 @@ let elapsedTime = 0;
 let mediaRecorder;
 let audioChunks = [];
 
+function setTrackingButtonsEnabled(enabled) {
+  const startBtn = document.getElementById("startBtn");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const stopBtn = document.getElementById("stopBtn");
+
+  if (startBtn) startBtn.disabled = !enabled;
+  if (pauseBtn) pauseBtn.disabled = !enabled;
+  if (stopBtn) stopBtn.disabled = !enabled;
+}
+
 // === INIT LEAFLET MAP ===
 
 function initMap(callback) {
@@ -128,7 +138,9 @@ function disableStartButton() {
 }
 
 window.startTracking = function () {
-  document.getElementById("startBtn").disabled = true;
+  //document.getElementById("startBtn").disabled = true;
+  setTrackingButtonsEnabled(true);
+
   startAutoBackup();
 
   if (navigator.geolocation) {
@@ -218,7 +230,9 @@ function resetApp() {
   }
 
   stopAutoBackup();
-  document.getElementById("startBtn").disabled = false;
+  //document.getElementById("startBtn").disabled = false;
+  setTrackingButtonsEnabled(true);
+
 
   console.log("🧹 App reset — ready for a new session!");
 }
@@ -590,7 +604,9 @@ window.loadSession = function (index) {
   initMap(() => {
     drawSavedRoutePath();
     showRouteDataOnMap();
-    disableStartButton();
+    setTrackingButtonsEnabled(false);
+
+    //disableStartButton();
   });
 
   //document.getElementById("exportSummaryBtn").disabled = false;
@@ -638,7 +654,9 @@ function loadMostRecentSession(callback) {
     initMap(() => {
       drawSavedRoutePath();
       showRouteDataOnMap();
-      disableStartButton();
+      setTrackingButtonsEnabled(false);
+
+      //disableStartButton();
       if (typeof callback === "function") callback();
     });
   } else if (typeof callback === "function") {
@@ -776,6 +794,8 @@ window.onload = function () {
       initMap(() => {
         drawSavedRoutePath();
         showRouteDataOnMap();
+        setTrackingButtonsEnabled(false);
+
       });
     } catch (e) {
       console.error("❌ Invalid shared data:", e);
@@ -801,7 +821,9 @@ window.onload = function () {
           initMap(() => {
             drawSavedRoutePath();
             showRouteDataOnMap();
-            disableStartButton();
+            setTrackingButtonsEnabled(false);
+
+            //disableStartButton();
           });
 
           document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
@@ -811,8 +833,9 @@ window.onload = function () {
           updateTimerDisplay();
           startTimer();
           startAutoBackup();
+          setTrackingButtonsEnabled(false);
 
-          disableStartButton();
+          //disableStartButton();
 
           alert("✅ Route recovered successfully!");
         } catch (e) {
