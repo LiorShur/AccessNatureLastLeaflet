@@ -911,11 +911,28 @@ const SummaryArchive = (() => {
   const confirmed = confirm("🗑️ Are you sure you want to delete this route summary?");
   if (!confirmed) return;
 
-  let archive = getArchive();
-  archive = archive.filter(item => item.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(archive));
-  showArchiveBrowser(); // refresh the panel
+  const archive = getArchive();
+  const updatedArchive = archive.filter(item => item.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedArchive));
+
+  // Smooth fade-out effect
+  const container = document.getElementById("archivePanel");
+  if (container) {
+    const listItems = container.querySelectorAll("li");
+    listItems.forEach(li => {
+      if (li.innerHTML.includes(`SummaryArchive.deleteSummary(${id})`)) {
+        li.classList.add("fade-out", "remove");
+        setTimeout(() => {
+          li.remove();
+          if (container.querySelectorAll("li").length === 0) {
+            showArchiveBrowser(); // rebuild the empty UI
+          }
+        }, 500);
+      }
+    });
+  }
 }
+
 
   function viewSummary(id) {
     const item = getArchive().find(entry => entry.id === id);
