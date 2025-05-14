@@ -267,7 +267,13 @@ background-color: #2196F3;
 .toggle-panel.open {
   max-height: 500px; /* or auto with care */
 }
-
+.fade-out {
+  opacity: 1;
+  transition: opacity 0.5s ease-out;
+}
+.fade-out.remove {
+  opacity: 0;
+}
 
 @media (max-width: 600px) {
   .button-row button {
