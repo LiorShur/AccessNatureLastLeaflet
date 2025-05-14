@@ -138,9 +138,9 @@ function disableStartButton() {
 }
 
 window.startTracking = function () {
-  //document.getElementById("startBtn").disabled = true;
+  
   setTrackingButtonsEnabled(true);
-
+  document.getElementById("startBtn").disabled = true;
   startAutoBackup();
 
   if (navigator.geolocation) {
