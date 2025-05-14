@@ -523,10 +523,7 @@ window.saveSession = function () {
     localStorage.setItem("sessions", JSON.stringify(sessions));
     localStorage.removeItem("route_backup");
 
-    alert("✅ Route saved!
-`🏁 Route Stats:
-Total Distance: ${totalDistance.toFixed(2)} km
-Total Time: ${document.getElementById("timer").textContent}`");
+    alert("✅ Route saved!");
     loadSavedSessions();
     return true;
   } catch (e) {
