@@ -908,10 +908,14 @@ const SummaryArchive = (() => {
   }
 
   function deleteSummary(id) {
-    let archive = getArchive();
-    archive = archive.filter(item => item.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(archive));
-  }
+  const confirmed = confirm("🗑️ Are you sure you want to delete this route summary?");
+  if (!confirmed) return;
+
+  let archive = getArchive();
+  archive = archive.filter(item => item.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(archive));
+  showArchiveBrowser(); // refresh the panel
+}
 
   function viewSummary(id) {
     const item = getArchive().find(entry => entry.id === id);
