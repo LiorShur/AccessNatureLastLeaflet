@@ -213,11 +213,12 @@ function resetApp() {
 }
 
 function resumeTracking() {
-  if (!timerInterval) {
-    startTime = Date.now() - elapsedTime;
-    timerInterval = setInterval(updateTimerDisplay, 1000);
-  }
+  // Restart timer interval even if timer was running silently
+  clearInterval(timerInterval);
+  startTime = Date.now() - elapsedTime;
+  timerInterval = setInterval(updateTimerDisplay, 1000);
 
+  // Resume location tracking
   if (navigator.geolocation) {
     watchId = navigator.geolocation.watchPosition(
       position => {
