@@ -176,7 +176,7 @@ window.stopTracking = function () {
   if (wantsToSave) {
     const wasSaved = saveSession(); // returns true if saved
     if (wasSaved) {
-      Summary();
+      //Summary();
       resetApp();
     } else {
       resumeTracking();
@@ -523,7 +523,11 @@ window.saveSession = function () {
     localStorage.setItem("sessions", JSON.stringify(sessions));
     localStorage.removeItem("route_backup");
 
-    alert("✅ Route saved!");
+    alert(`✅ Route saved successfully!
+
+🏁 Route Summary:
+📏 Distance: ${totalDistance.toFixed(2)} km
+⏱️ Time: ${document.getElementById("timer").textContent}`);
     loadSavedSessions();
     return true;
   } catch (e) {
