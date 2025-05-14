@@ -831,7 +831,7 @@ window.onload = function () {
 
           startTime = Date.now() - elapsedTime;
           updateTimerDisplay();
-          startTimer();
+          //startTimer();
           startAutoBackup();
           setTrackingButtonsEnabled(false);
 
