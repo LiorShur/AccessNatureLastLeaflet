@@ -496,40 +496,12 @@ window.saveSession = function () {
   const name = prompt("Enter a name for this route:");
   if (!name) {
     console.log("⛔ Save cancelled — no name provided.");
-
-    // ✅ Resume session exactly as before
-    startTime = Date.now() - elapsedTime;
-    timerInterval = setInterval(updateTimerDisplay, 1000);
-    startAutoBackup();
-
-    if (navigator.geolocation) {
-      watchId = navigator.geolocation.watchPosition(
-        position => {
-          const { latitude, longitude, accuracy } = position.coords;
-          if (accuracy > 25) return;
-          const latLng = { lat: latitude, lng: longitude };
-          if (lastCoords) {
-            const dist = haversineDistance(lastCoords, latLng);
-            if (dist > 0.2) return;
-            totalDistance += dist;
-          }
-
-          lastCoords = latLng;
-          path.push(latLng);
-          marker.setLatLng(latLng);
-          map.panTo(latLng);
-          L.polyline(path, { color: 'green' }).addTo(map);
-
-          routeData.push({ type: "location", timestamp: Date.now(), coords: latLng });
-          document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
-          document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
-        },
-        err => console.error("GPS error:", err),
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-      );
+    // ✅ Just resume timer if it was paused
+    if (!timerInterval) {
+      startTime = Date.now() - elapsedTime;
+      timerInterval = setInterval(updateTimerDisplay, 1000);
     }
-
-    return; // 👈 Stop here if user canceled
+    return;
   }
 
   const session = {
