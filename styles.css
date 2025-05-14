@@ -86,6 +86,22 @@ button {
   font-size: 16px;
   transition: background-color 0.3s ease;
 }
+.control-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #28a745; /* normal green */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.control-button:disabled {
+  background-color: #aaa;      /* gray background when disabled */
+  color: #eee;                 /* light text color */
+  cursor: not-allowed;         /* not-allowed cursor */
+  opacity: 0.7;                /* slightly faded look */
+}
 
 /* button:hover {
   background-color: #45a049;
