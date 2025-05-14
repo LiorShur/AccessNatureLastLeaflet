@@ -12,42 +12,7 @@ let mediaRecorder;
 let audioChunks = [];
 
 // === INIT LEAFLET MAP ===
-// function initMap(callback) {
-//   // If a map already exists on this container, remove it
-//   if (map && map.remove) {
-//     map.remove(); // Clean up the previous map instance
-//   }
-//   // Now safely initialize a new map
-//   map = L.map('map').setView([0, 0], 15);
 
-//   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-//     maxZoom: 19,
-//     attribution: '&copy; OpenStreetMap contributors'
-//   }).addTo(map);
-
-//   marker = L.marker([0, 0], { title: "Start" }).addTo(map);
-
-//   // Try to get user location
-//   if (navigator.geolocation) {
-//     navigator.geolocation.getCurrentPosition(
-//       position => {
-//         const userLocation = {
-//           lat: position.coords.latitude,
-//           lng: position.coords.longitude
-//         };
-//         // Delay to ensure map has rendered before setting view
-//     setTimeout(() => {
-//       map.setView(userLocation, 17);
-//       marker.setLatLng(userLocation);
-//     }, 100);
-//       error => {
-//         console.warn("Geolocation failed or denied, using default center.");
-//       }
-//     );
-//   }
-
-//   if (callback) callback();
-// }
 function initMap(callback) {
   //   // If a map already exists on this container, remove it
   if (map && map.remove) {
@@ -201,10 +166,26 @@ window.stopTracking = function () {
   stopAutoBackup();
 
   const wantsToSave = confirm("💾 Do you want to save this route?");
-  if (wantsToSave) saveSession();
+  // if (wantsToSave) saveSession();
 
-  Summary(); // nice summary
-  resetApp();
+  // Summary(); // nice summary
+  // resetApp();
+    if (wantsToSave) {
+    saveSession();  // This function already handles reset and cleanup after save
+    Summary();
+    resetApp();
+  } else {
+    const confirmDiscard = confirm("⚠️ Are you sure you want to discard this route? Click OK to discard or Escape to return to current session");
+    if (confirmDiscard) {
+      Summary();
+      resetApp();  // Only reset if they confirmed discarding
+    } else {
+      // Do nothing – let them resume their session
+      startTimer();
+      startAutoBackup();
+    }
+  }
+};
 };
 
 function resetApp() {
