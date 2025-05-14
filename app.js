@@ -167,21 +167,22 @@ window.startTracking = function () {
 };
 
 window.stopTracking = function () {
+  
   if (watchId) navigator.geolocation.clearWatch(watchId);
   stopTimer();
   stopAutoBackup();
 
   const wantsToSave = confirm("💾 Do you want to save this route?");
   if (wantsToSave) {
-    const wasSaved = saveSession(); // will return true or false
+    const wasSaved = saveSession(); // returns true if saved
     if (wasSaved) {
       Summary();
       resetApp();
     } else {
-      resumeTimer(); // Keep going as if nothing happened
+      resumeTracking();
     }
   } else {
-    resumeTimer(); // User canceled, just continue tracking
+    resumeTracking();
   }
 };
 
@@ -209,6 +210,43 @@ function resetApp() {
 
   stopAutoBackup();
   console.log("🧹 App reset — ready for a new session!");
+}
+
+function resumeTracking() {
+  if (!timerInterval) {
+    startTime = Date.now() - elapsedTime;
+    timerInterval = setInterval(updateTimerDisplay, 1000);
+  }
+
+  if (navigator.geolocation) {
+    watchId = navigator.geolocation.watchPosition(
+      position => {
+        const { latitude, longitude, accuracy } = position.coords;
+        if (accuracy > 25) return;
+
+        const latLng = { lat: latitude, lng: longitude };
+        if (lastCoords) {
+          const dist = haversineDistance(lastCoords, latLng);
+          if (dist > 0.2) return;
+          totalDistance += dist;
+        }
+
+        lastCoords = latLng;
+        path.push(latLng);
+        marker.setLatLng(latLng);
+        map.panTo(latLng);
+        L.polyline(path, { color: 'green' }).addTo(map);
+
+        routeData.push({ type: "location", timestamp: Date.now(), coords: latLng });
+        document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
+        document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
+      },
+      err => console.error("GPS error:", err),
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+    );
+  }
+
+  startAutoBackup();
 }
 
 function Summary() {
@@ -462,17 +500,13 @@ window.addEventListener("beforeunload", function (e) {
 window.saveSession = function () {
   console.log("🔍 Attempting to save session...");
 
-  if (!routeData || routeData.length === 0) {
-    alert("⚠️ No route data to save. Please start tracking before saving.");
-    console.warn("❌ Save aborted: routeData is empty.");
+    if (!routeData || routeData.length === 0) {
+    alert("⚠️ No route data to save.");
     return false;
   }
 
   const name = prompt("Enter a name for this route:");
-  if (!name) {
-    console.log("⛔ Save cancelled — no name provided.");
-    return false;
-  }
+  if (!name) return false;
 
   const session = {
     name,
@@ -483,17 +517,17 @@ window.saveSession = function () {
   };
 
   try {
-    let sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
+    const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
     sessions.push(session);
     localStorage.setItem("sessions", JSON.stringify(sessions));
     localStorage.removeItem("route_backup");
 
-    alert("✅ Route saved successfully!");
+    alert("✅ Route saved!");
     loadSavedSessions();
     return true;
   } catch (e) {
-    console.error("❌ Save failed. Storage full or data too large.", e);
-    alert("❌ Could not save the route. Storage may be full.");
+    console.error("❌ Save failed:", e);
+    alert("❌ Could not save the route.");
     return false;
   }
   initMap();
