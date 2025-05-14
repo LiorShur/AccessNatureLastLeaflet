@@ -97,9 +97,9 @@ function updateTimerDisplay() {
   document.getElementById("liveTimer").textContent = formatted;
 }
 
-function pad(n) {
-  return n.toString().padStart(2, "0");
-}
+// function pad(n) {
+//   return n.toString().padStart(2, "0");
+// }
 
 // === DISTANCE ===
 function haversineDistance(coord1, coord2) {
@@ -161,28 +161,54 @@ window.startTracking = function () {
 
 window.stopTracking = function () {
   if (watchId) navigator.geolocation.clearWatch(watchId);
-  stopTimer();
-  stopAutoBackup();
+
+  clearInterval(timerInterval); // Pause timer without resetting
+  clearInterval(autoSaveInterval); // Pause backup without clearing data
 
   const wantsToSave = confirm("💾 Do you want to save this route?");
   
   if (wantsToSave) {
-    saveSession();  // This function already handles reset and cleanup after save
+    saveSession();  // Handles save and UI refresh
     Summary();
-    resetApp();
+    resetApp();     // Reset only after saving
   } else {
-    const confirmDiscard = confirm("⚠️ Are you sure you want to discard this route?");
+    const confirmDiscard = confirm("⚠️ Are you sure you want to discard this route? Press OK to discard or Cancel to resume current session");
     if (confirmDiscard) {
       Summary();
-      resetApp();  // Only reset if they confirmed discarding
+      resetApp();
     } else {
-      // Do nothing – let them resume their session
-      startTimer();
+      // ✅ Resume tracking exactly where user left off
+      startTime = Date.now() - elapsedTime;
+      timerInterval = setInterval(updateTimerDisplay, 1000);
       startAutoBackup();
+      watchId = navigator.geolocation.watchPosition(
+        position => {
+          const { latitude, longitude, accuracy } = position.coords;
+          if (accuracy > 25) return;
+          const latLng = { lat: latitude, lng: longitude };
+          if (lastCoords) {
+            const dist = haversineDistance(lastCoords, latLng);
+            if (dist > 0.2) return;
+            totalDistance += dist;
+          }
+
+          lastCoords = latLng;
+          path.push(latLng);
+          marker.setLatLng(latLng);
+          map.panTo(latLng);
+          L.polyline(path, { color: 'green' }).addTo(map);
+
+          routeData.push({ type: "location", timestamp: Date.now(), coords: latLng });
+          document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
+          document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
+        },
+        err => console.error("GPS error:", err),
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+      );
+      console.log("🔁 Tracking resumed");
     }
   }
 };
-
 
 function resetApp() {
   routeData = [];
