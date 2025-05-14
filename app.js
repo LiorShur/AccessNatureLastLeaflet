@@ -174,7 +174,7 @@ window.stopTracking = function () {
   } else {
     const confirmDiscard = confirm("⚠️ Are you sure you want to discard this route? Press OK to discard or Cancel to resume current session");
     if (confirmDiscard) {
-      Summary();
+      //Summary();
       resetApp();
     } else {
       // ✅ Resume tracking exactly where user left off
