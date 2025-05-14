@@ -181,7 +181,12 @@ window.startTracking = function () {
       { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
     );
 
-    startTimer();
+    //startTimer();
+    startTime = Date.now() - elapsedTime;
+clearInterval(timerInterval);
+updateTimerDisplay();
+timerInterval = setInterval(updateTimerDisplay, 1000);
+
   } else {
     alert("Geolocation not supported");
   }
