@@ -120,6 +120,7 @@ function haversineDistance(coord1, coord2) {
 
 // === ROUTE TRACKING ===
 window.startTracking = function () {
+  document.getElementById("startBtn").disabled = true;
   startAutoBackup();
 
   if (navigator.geolocation) {
@@ -209,6 +210,8 @@ function resetApp() {
   }
 
   stopAutoBackup();
+  document.getElementById("startBtn").disabled = false;
+
   console.log("🧹 App reset — ready for a new session!");
 }
 
