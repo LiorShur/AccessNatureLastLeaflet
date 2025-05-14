@@ -832,10 +832,10 @@ window.onload = function () {
           startTime = Date.now() - elapsedTime;
           updateTimerDisplay();
           //startTimer();
-          updateTimerDisplay(); // ✅ only display the recovered time
+          //updateTimerDisplay(); // ✅ only display the recovered time
           // Do not auto-start the timer or backup
           startAutoBackup();
-          //setTrackingButtonsEnabled(false);
+          setTrackingButtonsEnabled(true);
 
           //disableStartButton();
 
