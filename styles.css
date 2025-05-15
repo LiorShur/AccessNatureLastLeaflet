@@ -88,6 +88,8 @@ button {
 }
 
 button:disabled {
+  background-color: #ccc !important;
+  color: #888 !important;
   opacity: 0.5;
   cursor: not-allowed;
 }
