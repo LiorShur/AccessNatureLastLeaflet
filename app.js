@@ -298,11 +298,32 @@ function resetApp() {
   localStorage.removeItem("route_backup");
 
   // Reset map to initial state
-  if (map && marker) {
-    marker.setLatLng([0, 0]);
-    map.setView([0, 0], 15);
-  }
-  // Trigger current location again
+//   if (map && marker) {
+//     marker.setLatLng([0, 0]);
+//     map.setView([0, 0], 15);
+//   }
+//   // Trigger current location again
+// if (navigator.geolocation) {
+//   navigator.geolocation.getCurrentPosition(
+//     position => {
+//       const userLocation = {
+//         lat: position.coords.latitude,
+//         lng: position.coords.longitude
+//       };
+//       map.setView(userLocation, 17);
+//       marker.setLatLng(userLocation);
+//     }
+//     error => {
+//       console.warn("Geolocation failed or denied, using default.");
+//     }
+//   );
+// }
+  if (map) {
+  map.setView([0, 0], 15);
+  marker.setLatLng([0, 0]);
+}
+
+// Trigger current location again
 if (navigator.geolocation) {
   navigator.geolocation.getCurrentPosition(
     position => {
@@ -312,12 +333,13 @@ if (navigator.geolocation) {
       };
       map.setView(userLocation, 17);
       marker.setLatLng(userLocation);
-    }
+    },
     error => {
       console.warn("Geolocation failed or denied, using default.");
     }
   );
 }
+
 
   stopAutoBackup();
   //document.getElementById("startBtn").disabled = false;
