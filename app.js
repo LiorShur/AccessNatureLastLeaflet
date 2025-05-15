@@ -303,25 +303,15 @@ function resetApp() {
     map.setView([0, 0], 15);
   }
   // Trigger current location again
-// if (navigator.geolocation) {
-//     watchId = navigator.geolocation.watchPosition(
-//       position => {
-//         const { latitude, longitude, accuracy } = position.coords;
-//         if (accuracy > 25) return;
-  
 if (navigator.geolocation) {
-  watchId = navigator.geolocation.watchPosition(
-      position => {
-        const { latitude, longitude, accuracy } = position.coords;
-        if (accuracy > 25) return;
-  // navigator.geolocation.getCurrentPosition(
-  //   position => {
-  //     const userLocation = {
-  //       lat: position.coords.latitude,
-  //       lng: position.coords.longitude
-      });
-      map.setView(position, 15);
-      marker.setLatLng(position);
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      const userLocation = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      };
+      map.setView(userLocation, 17);
+      marker.setLatLng(userLocation);
     },
     error => {
       console.warn("Geolocation failed or denied, using default.");
