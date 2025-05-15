@@ -342,18 +342,18 @@ function resetApp() {
   // Reset display
   document.getElementById("distance").textContent = "0.00 km";
   document.getElementById("timer").textContent = "00:00:00";
-  document.getElementById("liveDistance").textContent = "0.00 km";
-  document.getElementById("liveTimer").textContent = "00:00:00";
+  // document.getElementById("liveDistance").textContent = "0.00 km";
+  // document.getElementById("liveTimer").textContent = "00:00:00";
 
   // Stop autosave and clear backup
   stopAutoBackup();
   localStorage.removeItem("route_backup");
 
   // Re-enable Start button, disable Pause/Stop
-  document.getElementById("startBtn").disabled = false;
-  document.getElementById("pauseBtn").disabled = true;
-  document.getElementById("stopBtn").disabled = true;
-  document.getElementById("resetBtn").disabled = false;
+  // document.getElementById("startBtn").disabled = false;
+  // document.getElementById("pauseBtn").disabled = true;
+  // document.getElementById("stopBtn").disabled = true;
+  // document.getElementById("resetBtn").disabled = false;
 
   // Clear map layers if needed
   if (map) {
@@ -389,6 +389,8 @@ function resetApp() {
       }
     );
   }
+  setTrackingButtonsEnabled(true);
+  document.getElementById("resetBtn").disabled = false;
 
   console.log("🧹 App reset — ready for a new session!");
 }
