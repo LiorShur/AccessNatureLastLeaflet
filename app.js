@@ -21,6 +21,29 @@ function setTrackingButtonsEnabled(enabled) {
   if (stopBtn) stopBtn.disabled = !enabled;
 }
 
+const noteIcon = L.divIcon({
+  className: 'custom-icon note-icon',
+  html: '📝',
+  iconSize: [24, 24]
+});
+
+const photoIcon = L.divIcon({
+  className: 'custom-icon photo-icon',
+  html: '📸',
+  iconSize: [24, 24]
+});
+const audioIcon = L.divIcon({
+  className: 'custom-icon audio-icon',
+  html: '<span title="Audio">🎙️</span>',
+  iconSize: [24, 24]
+});
+
+const videoIcon = L.divIcon({
+  className: 'custom-icon video-icon',
+  html: '<span title="Video">🎬</span>',
+  iconSize: [24, 24]
+});
+
 // === INIT LEAFLET MAP ===
 
 function initMap(callback) {
@@ -430,9 +453,8 @@ window.addEventListener("DOMContentLoaded", () => {
 let noteMarkers = []; // Global array to track note markers
 
 function showRouteDataOnMap() {
-  // Clear existing note markers
   if (noteMarkers.length > 0) {
-    noteMarkers.forEach(m => map.removeLayer(m));
+    noteMarkers.forEach(marker => marker.remove());
     noteMarkers = [];
   }
 
@@ -441,46 +463,62 @@ function showRouteDataOnMap() {
     return;
   }
 
-  const bounds = [];
+  const bounds = L.latLngBounds([]);
+  let noteCounter = 1, photoCounter = 1, audioCounter = 1, videoCounter = 1;
 
   routeData.forEach(entry => {
     const { coords, type, content } = entry;
     if (!coords) return;
 
     if (type === "location") {
-      bounds.push([coords.lat, coords.lng]);
+      bounds.extend(coords);
       return;
     }
 
-    let popupContent = "";
-    if (type === "text") {
-      popupContent = `<p>${content}</p>`;
-    } else if (type === "photo") {
-      popupContent = `<img src="${content}" style="width:150px" onclick="showMediaFullScreen('${content}', 'photo')">`;
-    } else if (type === "audio") {
-      popupContent = `<audio controls src="${content}"></audio>`;
-    } else if (type === "video") {
-      popupContent = `<video controls width="200" src="${content}" onclick="showMediaFullScreen('${content}', 'video')"></video>`;
+    let icon, tooltip, popupHTML;
+
+    switch (type) {
+      case "text":
+        icon = noteIcon;
+        tooltip = `Note ${noteCounter}`;
+        popupHTML = `<b>${tooltip}</b><br><p>${content}</p>`;
+        noteCounter++;
+        break;
+      case "photo":
+        icon = photoIcon;
+        tooltip = `Photo ${photoCounter}`;
+        popupHTML = `<b>${tooltip}</b><br><img src="${content}" style="width:150px" onclick="showMediaFullScreen('${content}', 'photo')">`;
+        photoCounter++;
+        break;
+      case "audio":
+        icon = audioIcon;
+        tooltip = `Audio ${audioCounter}`;
+        popupHTML = `<b>${tooltip}</b><br><audio controls src="${content}"></audio>`;
+        audioCounter++;
+        break;
+      case "video":
+        icon = videoIcon;
+        tooltip = `Video ${videoCounter}`;
+        popupHTML = `<b>${tooltip}</b><br><video controls width="200" src="${content}" onclick="showMediaFullScreen('${content}', 'video')"></video>`;
+        videoCounter++;
+        break;
     }
 
-    const iconLabel = type === "photo" ? "📸" :
-                      type === "audio" ? "🎙️" :
-                      type === "video" ? "🎬" : "📝";
-
-    const marker = L.marker([coords.lat, coords.lng], {
-      title: iconLabel
-    }).addTo(map).bindPopup(popupContent);
+    const marker = L.marker(coords, { icon }).addTo(map);
+    marker.bindTooltip(tooltip);
+    marker.bindPopup(popupHTML);
 
     noteMarkers.push(marker);
-    bounds.push([coords.lat, coords.lng]);
+    bounds.extend(coords);
   });
 
-  if (bounds.length > 0) {
+  if (bounds.isValid()) {
     map.fitBounds(bounds);
   } else {
     map.setZoom(17);
   }
 }
+
 
 // === FULLSCREEN MEDIA VIEWER ===
 window.showMediaFullScreen = function (content, type) {
