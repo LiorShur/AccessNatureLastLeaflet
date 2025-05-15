@@ -50,8 +50,8 @@
     <div class="button-row orange">
 <!--     <button onclick="exportRouteSummary()">📦 Export Route Summary</button>
     <button id="exportSummaryBtn" onclick="exportRouteSummary()" disabled>📦 Export Route Summary</button> -->
-    <button onclick="prepareAndExport()">📦 Export Last Route</button>
-    <button onclick="exportAllRoutes()">🌍 Export All Routes</button>
+    <button id="prepareAndExportBtn" onclick="prepareAndExport()">📦 Export Last Route</button>
+    <button id="exportAllRoutesBtn" onclick="exportAllRoutes()">🌍 Export All Routes</button>
 </div>
 
 <!--     <button onclick="window.open('explorer.html')">Routes Explorer Page</button>
@@ -63,9 +63,9 @@
     </div>
  -->
     <div class="button-row gray">
-      <button onclick="exportData()">📄 JSON</button>
-      <button onclick="exportPDF()">📄 PDF</button>
-      <button onclick="exportGPX()">📍 GPX</button>
+      <button id="exportDataBtn" onclick="exportData()">📄 JSON</button>
+      <button id="exportPDFBtn" onclick="exportPDF()">📄 PDF</button>
+      <button id="exportGPXBtn" onclick="exportGPX()">📍 GPX</button>
     </div> 
 <!--     <div class="button-row"> -->
 <!--   <button onclick="openHistory()">View Past Routes</button>
@@ -74,24 +74,24 @@
 <!--   <div id="archivePanel" class="button-row" style="display: none;"></div> -->
 <div class="button-row orange">
 <!--     <button onclick="toggleArchivePanel()">📜 Browse Summaries</button> -->
-  <button onclick="toggleArchivePanel()">📜 Browse Summaries <span id="archiveArrow">▼</span></button>
-  <button onclick="SummaryArchive.clearAll()" id="clearArchiveBtn">🗑️ Clear All Summaries</button>
+  <button id="toggleArchivePanelBtn" onclick="toggleArchivePanel()">📜 Browse Summaries <span id="archiveArrow">▼</span></button>
+  <button id="clearArchiveBtnBtn" onclick="SummaryArchive.clearAll()">🗑️ Clear All Summaries</button>
 </div>
 <div id="archivePanel" class="toggle-panel"></div>  
 <div id="historyPanel" style="display:none;">
   <h3>Past Sessions</h3>
   <ul id="historyList"></ul>
-  <button onclick="closeHistory()">Close</button>
+  <button id="closeHistoryBtn" onclick="closeHistory()">Close</button>
 </div>
     <div class="button-row green">
-  <button onclick="clearAllSessions()">🗑️ Clear All Saved Routes</button>
+  <button id="clearAllSessionsBtn" onclick="clearAllSessions()">🗑️ Clear All Saved Routes</button>
 </div>
     
 <div class="button-row green">
   <button onclick="toggleDarkMode()">🌙☀️ Dark/Light Mode</button>
 </div>
  <div class="button-row purple">   
-<button onclick="clearAllAppData()">🧹 Clear Everything</button>
+<button id="clearAllAppDataBtn" onclick="clearAllAppData()">🧹 Clear Everything</button>
  </div>   
 <!-- <div id="archivePanel"></div>  
 <button onclick="SummaryArchive.showArchiveBrowser()">Browse Summaries</button>
