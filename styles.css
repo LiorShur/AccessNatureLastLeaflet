@@ -275,6 +275,14 @@ background-color: #2196F3;
   opacity: 0;
 }
 
+.custom-icon {
+    text-align: center;
+    line-height: 24px;
+    font-size: 20px;
+  }
+  .leaflet-tooltip {
+    font-size: 12px;
+  }
 @media (max-width: 600px) {
   .button-row button {
     flex: 1 1 100%;
