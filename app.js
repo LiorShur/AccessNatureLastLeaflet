@@ -319,7 +319,7 @@ if (navigator.geolocation) {
   //     const userLocation = {
   //       lat: position.coords.latitude,
   //       lng: position.coords.longitude
-      };
+      }};
       map.setView(position, 15);
       marker.setLatLng(position);
     },
