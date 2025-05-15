@@ -22,48 +22,71 @@ function setTrackingButtonsEnabled(enabled) {
 }
 
 const noteIcon = L.divIcon({
-  className: 'custom-icon',
-  html: `
-    <div title="Note">
-      <svg width="24" height="24" viewBox="0 0 24 24">
-        <path fill="orange" d="M3 3v18h18V3H3zm16 16H5V5h14v14z"/>
-        <text x="6" y="17" font-size="12" fill="black">📝</text>
-      </svg>
-    </div>`
+  className: 'custom-icon note-icon',
+  html: '📝',
+  iconSize: [24, 24]
 });
 
 const photoIcon = L.divIcon({
-  className: 'custom-icon',
-  html: `
-    <div title="Photo">
-      <svg width="24" height="24" viewBox="0 0 24 24">
-        <path fill="#2196F3" d="M21 19V5H3v14h18zM3 3h18a2 2 0 012 2v14a2 2 0 01-2 2H3a2 2 0 01-2-2V5a2 2 0 012-2z"/>
-        <circle cx="12" cy="12" r="3" fill="white"/>
-      </svg>
-    </div>`
+  className: 'custom-icon photo-icon',
+  html: '📸',
+  iconSize: [24, 24]
 });
-
 const audioIcon = L.divIcon({
-  className: 'custom-icon',
-  html: `
-    <div title="Audio">
-      <svg width="24" height="24" viewBox="0 0 24 24">
-        <rect x="9" y="4" width="6" height="14" fill="purple"/>
-        <path d="M5 10v4h2v-4H5zm12 0v4h2v-4h-2z" fill="gray"/>
-      </svg>
-    </div>`
+  className: 'custom-icon audio-icon',
+  html: '<span title="Audio">🎙️</span>',
+  iconSize: [24, 24]
 });
 
 const videoIcon = L.divIcon({
-  className: 'custom-icon',
-  html: `
-    <div title="Video">
-      <svg width="24" height="24" viewBox="0 0 24 24">
-        <rect x="4" y="5" width="14" height="14" fill="#4CAF50"/>
-        <polygon points="10,9 15,12 10,15" fill="white"/>
-      </svg>
-    </div>`
+  className: 'custom-icon video-icon',
+  html: '<span title="Video">🎬</span>',
+  iconSize: [24, 24]
 });
+
+// const noteIcon = L.divIcon({
+//   className: 'custom-icon',
+//   html: `
+//     <div title="Note">
+//       <svg width="24" height="24" viewBox="0 0 24 24">
+//         <path fill="orange" d="M3 3v18h18V3H3zm16 16H5V5h14v14z"/>
+//         <text x="6" y="17" font-size="12" fill="black">📝</text>
+//       </svg>
+//     </div>`
+// });
+
+// const photoIcon = L.divIcon({
+//   className: 'custom-icon',
+//   html: `
+//     <div title="Photo">
+//       <svg width="24" height="24" viewBox="0 0 24 24">
+//         <path fill="#2196F3" d="M21 19V5H3v14h18zM3 3h18a2 2 0 012 2v14a2 2 0 01-2 2H3a2 2 0 01-2-2V5a2 2 0 012-2z"/>
+//         <circle cx="12" cy="12" r="3" fill="white"/>
+//       </svg>
+//     </div>`
+// });
+
+// const audioIcon = L.divIcon({
+//   className: 'custom-icon',
+//   html: `
+//     <div title="Audio">
+//       <svg width="24" height="24" viewBox="0 0 24 24">
+//         <rect x="9" y="4" width="6" height="14" fill="purple"/>
+//         <path d="M5 10v4h2v-4H5zm12 0v4h2v-4h-2z" fill="gray"/>
+//       </svg>
+//     </div>`
+// });
+
+// const videoIcon = L.divIcon({
+//   className: 'custom-icon',
+//   html: `
+//     <div title="Video">
+//       <svg width="24" height="24" viewBox="0 0 24 24">
+//         <rect x="4" y="5" width="14" height="14" fill="#4CAF50"/>
+//         <polygon points="10,9 15,12 10,15" fill="white"/>
+//       </svg>
+//     </div>`
+// });
 
 // === INIT LEAFLET MAP ===
 
