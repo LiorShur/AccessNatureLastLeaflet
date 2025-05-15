@@ -1054,6 +1054,7 @@ async function exportRouteSummary() {
   let noteCounter = 1;
   let photoCounter = 1;
   let audioCounter = 1;
+  let videoCounter = 1;
 
   for (const entry of routeData) {
     if (entry.type === "location") {
@@ -1061,21 +1062,24 @@ async function exportRouteSummary() {
     } else if (entry.type === "text") {
       notesFolder.file(`note${noteCounter}.txt`, entry.content);
       markersJS += `
-L.marker([${entry.coords.lat}, ${entry.coords.lng}])
+L.marker([${entry.coords.lat}, ${entry.coords.lng}], {
+  icon: L.divIcon({ className: 'custom-icon', html: '📝', iconSize: [24, 24] })
+})
   .addTo(map)
-  .bindPopup("<b>Note ${noteCounter}</b><br><pre>${entry.content}</pre>");
+  .bindTooltip("Note ${noteCounter++}")
+  .bindPopup("<b>Note ${noteCounter - 1}</b><br><pre>${entry.content}</pre>");
 `;
       noteCounter++;
     } else if (entry.type === "photo") {
       const base64Data = entry.content.split(",")[1];
       imagesFolder.file(`photo${photoCounter}.jpg`, base64Data, { base64: true });
       markersJS += `
-L.marker([${entry.coords.lat}, ${entry.coords.lng}])
+L.marker([${entry.coords.lat}, ${entry.coords.lng}], {
+  icon: L.divIcon({ className: 'custom-icon', html: '📸', iconSize: [24, 24] })
+})
   .addTo(map)
-  .bindPopup(\`
-    <b>Photo ${photoCounter}</b><br>
-    <img src="images/photo${photoCounter}.jpg" style="width:200px;cursor:pointer" onclick="showFullScreen(this)">
-  \`);
+  .bindTooltip("Photo ${photoCounter++}")
+  .bindPopup("<b>Photo ${photoCounter - 1}</b><br><img src='images/photo${photoCounter - 1}.jpg' style='width:200px'>");
 `;
       photoCounter++;
     } else if (entry.type === "audio") {
