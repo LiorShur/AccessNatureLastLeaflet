@@ -330,11 +330,13 @@ if (navigator.geolocation) {
 }
 
 window.confirmAndResetApp = function () {
-  if (routeData.length > 0) {
-    const confirmReset = confirm("⚠️ Are you sure you want to reset?");
-    if (!confirmReset) return;
-  }
-  resetApp();
+  // if (routeData.length > 0) {
+  //   const confirmReset = confirm("⚠️ Are you sure you want to reset?");
+  //   if (!confirmReset) return;
+  // }
+  const confirmReset = confirm("⚠️ Are you sure you want to reset?");
+  if (confirmReset) resetApp();
+  //resetApp();
 };
 
 function resumeTracking() {
