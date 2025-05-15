@@ -10,6 +10,7 @@ let isPaused = false;
 let elapsedTime = 0;
 let mediaRecorder;
 let audioChunks = [];
+let isTracking = false;
 
 function setTrackingButtonsEnabled(enabled) {
   const startBtn = document.getElementById("startBtn");
