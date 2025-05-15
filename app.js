@@ -788,7 +788,7 @@ window.loadSavedSessions = function () {
     const li = document.createElement("li");
     li.innerHTML = `
       <strong>${session.name}</strong>
-      <button onclick="loadSession(${index})">View</button>
+      <button id=loadSessionBtn" onclick="loadSession(${index})">View</button>
     `;
     list.appendChild(li);
   });
