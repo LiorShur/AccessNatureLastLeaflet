@@ -322,6 +322,8 @@ if (navigator.geolocation) {
   stopAutoBackup();
   //document.getElementById("startBtn").disabled = false;
   setTrackingButtonsEnabled(true);
+  document.getElementById("resetBtn").disabled = false;
+
 
 
   console.log("🧹 App reset — ready for a new session!");
