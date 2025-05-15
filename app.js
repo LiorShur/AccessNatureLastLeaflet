@@ -24,13 +24,13 @@ function setTrackingButtonsEnabled(enabled) {
 const noteIcon = L.divIcon({
   className: 'custom-icon note-icon',
   html: '📝',
-  iconSize: [24, 24]
+  iconSize: [28, 28]
 });
 
 const photoIcon = L.divIcon({
   className: 'custom-icon photo-icon',
   html: '📸',
-  iconSize: [24, 24]
+  iconSize: [28, 28]
 });
 const audioIcon = L.divIcon({
   className: 'custom-icon audio-icon',
