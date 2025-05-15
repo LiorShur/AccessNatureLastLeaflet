@@ -302,6 +302,22 @@ function resetApp() {
     marker.setLatLng([0, 0]);
     map.setView([0, 0], 15);
   }
+  // Trigger current location again
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      const userLocation = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      };
+      map.setView(userLocation, 17);
+      marker.setLatLng(userLocation);
+    },
+    error => {
+      console.warn("Geolocation failed or denied, using default.");
+    }
+  );
+}
 
   stopAutoBackup();
   //document.getElementById("startBtn").disabled = false;
