@@ -281,28 +281,29 @@ window.stopTracking = function () {
   }
 };
 
-function resetApp() {
-  routeData = [];
-  path = [];
-  lastCoords = null;
-  totalDistance = 0;
-  elapsedTime = 0;
-  startTime = null;
-  isPaused = false;
+// function resetApp() {
+//   routeData = [];
+//   path = [];
+//   lastCoords = null;
+//   totalDistance = 0;
+//   elapsedTime = 0;
+//   startTime = null;
+//   isPaused = false;
 
-  document.getElementById("distance").textContent = "0.00 km";
-  document.getElementById("timer").textContent = "00:00:00";
-  //document.getElementById("liveDistance").textContent = "0.00 km";
-  //document.getElementById("liveTimer").textContent = "00:00:00";
+//   document.getElementById("distance").textContent = "0.00 km";
+//   document.getElementById("timer").textContent = "00:00:00";
+//   //document.getElementById("liveDistance").textContent = "0.00 km";
+//   //document.getElementById("liveTimer").textContent = "00:00:00";
 
-  localStorage.removeItem("route_backup");
+//   localStorage.removeItem("route_backup");
 
-  // Reset map to initial state
-//   if (map && marker) {
-//     marker.setLatLng([0, 0]);
-//     map.setView([0, 0], 15);
-//   }
-//   // Trigger current location again
+
+//   if (map) {
+//   map.setView([0, 0], 15);
+//   marker.setLatLng([0, 0]);
+// }
+
+// // Trigger current location again
 // if (navigator.geolocation) {
 //   navigator.geolocation.getCurrentPosition(
 //     position => {
@@ -312,39 +313,82 @@ function resetApp() {
 //       };
 //       map.setView(userLocation, 17);
 //       marker.setLatLng(userLocation);
-//     }
+//     },
 //     error => {
 //       console.warn("Geolocation failed or denied, using default.");
 //     }
 //   );
 // }
-  if (map) {
-  map.setView([0, 0], 15);
-  marker.setLatLng([0, 0]);
-}
-
-// Trigger current location again
-if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(
-    position => {
-      const userLocation = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-      };
-      map.setView(userLocation, 17);
-      marker.setLatLng(userLocation);
-    },
-    error => {
-      console.warn("Geolocation failed or denied, using default.");
-    }
-  );
-}
 
 
+//   stopAutoBackup();
+//   //document.getElementById("startBtn").disabled = false;
+//   setTrackingButtonsEnabled(true);
+//   document.getElementById("resetBtn").disabled = false;
+
+//   console.log("🧹 App reset — ready for a new session!");
+// }
+
+function resetApp() {
+  // Clear state
+  routeData = [];
+  path = [];
+  lastCoords = null;
+  totalDistance = 0;
+  elapsedTime = 0;
+  startTime = null;
+  isPaused = false;
+
+  // Reset display
+  document.getElementById("distance").textContent = "0.00 km";
+  document.getElementById("timer").textContent = "00:00:00";
+  document.getElementById("liveDistance").textContent = "0.00 km";
+  document.getElementById("liveTimer").textContent = "00:00:00";
+
+  // Stop autosave and clear backup
   stopAutoBackup();
-  //document.getElementById("startBtn").disabled = false;
-  setTrackingButtonsEnabled(true);
+  localStorage.removeItem("route_backup");
+
+  // Re-enable Start button, disable Pause/Stop
+  document.getElementById("startBtn").disabled = false;
+  document.getElementById("pauseBtn").disabled = true;
+  document.getElementById("stopBtn").disabled = true;
   document.getElementById("resetBtn").disabled = false;
+
+  // Clear map layers if needed
+  if (map) {
+    map.eachLayer(layer => {
+      if (layer instanceof L.Polyline || layer instanceof L.Marker) {
+        map.removeLayer(layer);
+      }
+    });
+  }
+
+  // Re-add base tile layer and marker
+  if (!map) {
+    initMap();
+  }
+
+  const defaultView = [0, 0];
+  map.setView(defaultView, 15);
+  marker = L.marker(defaultView).addTo(map).bindPopup("Start").openPopup();
+
+  // Try to recenter map on user location
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const userLocation = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        map.setView(userLocation, 17);
+        marker.setLatLng(userLocation);
+      },
+      error => {
+        console.warn("Geolocation failed or denied, using default.");
+      }
+    );
+  }
 
   console.log("🧹 App reset — ready for a new session!");
 }
