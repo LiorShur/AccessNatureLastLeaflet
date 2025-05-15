@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Access Nature</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.7.1/dist/jszip.min.js"></script>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -149,7 +150,7 @@
   <input type="file" accept="image/*" capture="environment" id="photoInput" style="display: none" />
   <input type="file" accept="video/*" capture id="videoInput" style="display: none" />
 
-  <script src="app.js"></script>
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <!--   <script
     async 
@@ -157,7 +158,8 @@
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB4IoUFBPNGtVySKpFoqE9VITvGV7nkLHw&callback=initMap"
     ></script> -->
   <!-- ✅ New: Leaflet.js -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
