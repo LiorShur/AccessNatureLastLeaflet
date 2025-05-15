@@ -12,6 +12,29 @@ let mediaRecorder;
 let audioChunks = [];
 let isTracking = false;
 
+function setControlButtonsEnabled(enabled) {
+  const idsToDisable = [
+    "startBtn",
+    "saveBtn",
+    "loadBtn",
+    "exportSummaryBtn",
+    "viewHistoryBtn",
+    "clearAllBtn",
+    "refreshBtn",
+    "archiveBtn"
+  ];
+
+  idsToDisable.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.disabled = !enabled;
+      el.style.opacity = enabled ? "1" : "0.5";
+      el.style.pointerEvents = enabled ? "auto" : "none";
+    }
+  });
+}
+
+
 function setTrackingButtonsEnabled(enabled) {
   const startBtn = document.getElementById("startBtn");
   const pauseBtn = document.getElementById("pauseBtn");
@@ -211,6 +234,10 @@ window.startTracking = function () {
   document.getElementById("startBtn").disabled = true;
   document.getElementById("resetBtn").disabled = true;
 
+  isTracking = true;
+  setControlButtonsEnabled(false);  // ⛔ disable unrelated controls
+
+
   startAutoBackup();
 
   if (navigator.geolocation) {
@@ -392,6 +419,8 @@ function resetApp() {
   }
   setTrackingButtonsEnabled(true);
   document.getElementById("resetBtn").disabled = false;
+  isTracking = false;
+  setControlButtonsEnabled(true);   // ✅ re-enable controls
 
   console.log("🧹 App reset — ready for a new session!");
 }
@@ -965,6 +994,14 @@ window.generateShareableLink = function () {
 // === ON LOAD SHARED LINK HANDLER ===
 
 window.onload = function () {
+
+  window.addEventListener("beforeunload", function (e) {
+  if (isTracking) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
   const params = new URLSearchParams(window.location.search);
   const base64Data = params.get("data");
 
