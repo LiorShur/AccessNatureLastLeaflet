@@ -208,6 +208,8 @@ window.startTracking = function () {
   
   setTrackingButtonsEnabled(true);
   document.getElementById("startBtn").disabled = true;
+  document.getElementById("resetBtn").disabled = true;
+
   startAutoBackup();
 
   if (navigator.geolocation) {
@@ -308,6 +310,14 @@ function resetApp() {
 
   console.log("🧹 App reset — ready for a new session!");
 }
+
+window.confirmAndResetApp = function () {
+  if (routeData.length > 0) {
+    const confirmReset = confirm("⚠️ A route is in progress or unsaved. Are you sure you want to reset?");
+    if (!confirmReset) return;
+  }
+  resetApp();
+};
 
 function resumeTracking() {
   // Restart timer interval even if timer was running silently
@@ -647,6 +657,7 @@ window.saveSession = function () {
     alert("❌ Could not save the route.");
     return false;
   }
+  document.getElementById("resetBtn").disabled = false;
   initMap();
 };
 
