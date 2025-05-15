@@ -312,7 +312,7 @@ if (navigator.geolocation) {
       };
       map.setView(userLocation, 17);
       marker.setLatLng(userLocation);
-    },
+    }
     error => {
       console.warn("Geolocation failed or denied, using default.");
     }
