@@ -324,8 +324,6 @@ if (navigator.geolocation) {
   setTrackingButtonsEnabled(true);
   document.getElementById("resetBtn").disabled = false;
 
-
-
   console.log("🧹 App reset — ready for a new session!");
 }
 
