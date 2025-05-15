@@ -15,13 +15,18 @@ let isTracking = false;
 function setControlButtonsEnabled(enabled) {
   const idsToDisable = [
     "startBtn",
-    "saveBtn",
-    "loadBtn",
-    "exportSummaryBtn",
-    "viewHistoryBtn",
-    "clearAllBtn",
-    "refreshBtn",
-    "archiveBtn"
+    "resetBtn",
+    "prepareAndExportBtn",
+    "exportAllRoutesBtn",
+    "exportDataBtn",
+    "exportPDFBtn",
+    "exportGPXBtn",
+    "toggleArchivePanelBtn",
+    "clearArchiveBtnBtn",
+    "closeHistoryBtn",
+    "clearAllSessionsBtn",
+    "clearAllAppDataBtn",
+    "loadSessionBtn",
   ];
 
   idsToDisable.forEach(id => {
