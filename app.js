@@ -668,6 +668,7 @@ window.saveSession = function () {
 🏁 Route Summary:
 📏 Distance: ${totalDistance.toFixed(2)} km
 ⏱️ Time: ${document.getElementById("timer").textContent}`);
+    document.getElementById("resetBtn").disabled = false;
     loadSavedSessions();
     return true;
   } catch (e) {
