@@ -1715,11 +1715,24 @@ function closeAccessibilityForm() {
 
 function prefillAccessibilityForm(data) {
   const form = document.getElementById("accessibilityForm");
-  Object.keys(data).forEach(key => {
+  if (!form) return;
+
+  Object.entries(data).forEach(([key, value]) => {
     const field = form.elements[key];
-    if (field) field.value = data[key];
+    if (field) {
+      if (field.type === "file") {
+        // ❌ SKIP file inputs – cannot be set programmatically
+        return;
+      }
+      if (field.type === "checkbox") {
+        field.checked = value === "on" || value === true;
+      } else {
+        field.value = value;
+      }
+    }
   });
 }
+
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("accessibilityForm");
   if (form) {
