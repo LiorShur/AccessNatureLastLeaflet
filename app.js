@@ -1681,3 +1681,35 @@ function clearAllAppData() {
 
   alert("✅ All app data has been cleared!");
 }
+function promptAccessibilityForm(callback) {
+  document.getElementById("accessibilityFormOverlay").style.display = "flex";
+
+  const form = document.getElementById("accessibilityForm");
+  form.onsubmit = e => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const accessibilityData = {};
+
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File && value.name) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          accessibilityData[key] = reader.result;
+        };
+        reader.readAsDataURL(value);
+      } else {
+        accessibilityData[key] = value;
+      }
+    }
+
+    // Optional: Delay execution if awaiting image load
+    setTimeout(() => {
+      document.getElementById("accessibilityFormOverlay").style.display = "none";
+      callback(accessibilityData); // Pass back data
+    }, 500);
+  };
+}
+function closeAccessibilityForm() {
+  document.getElementById("accessibilityFormOverlay").style.display = "none";
+}
