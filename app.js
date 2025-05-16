@@ -799,6 +799,11 @@ window.loadSession = function (index) {
   document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
   //document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
 
+  const accessibilityEntry = session.data.find(e => e.type === "accessibility");
+  if (accessibilityEntry) {
+  prefillAccessibilityForm(accessibilityEntry.content);
+  }
+
   initMap(() => {
     drawSavedRoutePath();
     showRouteDataOnMap();
@@ -1308,6 +1313,11 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
     <h4>General Description:</h4>
     <textarea placeholder="Add notes or observations about the route here..."></textarea>
   </div>
+  <div class="accessibility-summary">
+  <h4>🧩 מידע על נגישות</h4>
+  <pre id="accessibilityDataContainer"></pre>
+</div>
+
 </div>
 
 <div id="map"></div>
@@ -1347,6 +1357,11 @@ function showFullScreen(img) {
   overlay.appendChild(fullImg);
   document.body.appendChild(overlay);
 }
+const accessibility = route.find(e => e.type === "accessibility");
+if (accessibility) {
+  document.getElementById("accessibilityDataContainer").textContent = JSON.stringify(accessibility.content, null, 2);
+}
+
 </script>
 </body>
 </html>
@@ -1659,6 +1674,7 @@ function clearAllAppData() {
 
   alert("✅ All app data has been cleared!");
 }
+
 function promptAccessibilityForm(callback) {
   document.getElementById("accessibilityFormOverlay").style.display = "flex";
 
@@ -1691,3 +1707,12 @@ function promptAccessibilityForm(callback) {
 function closeAccessibilityForm() {
   document.getElementById("accessibilityFormOverlay").style.display = "none";
 }
+
+function prefillAccessibilityForm(data) {
+  const form = document.getElementById("accessibilityForm");
+  Object.keys(data).forEach(key => {
+    const field = form.elements[key];
+    if (field) field.value = data[key];
+  });
+}
+
