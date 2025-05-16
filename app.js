@@ -1715,4 +1715,30 @@ function prefillAccessibilityForm(data) {
     if (field) field.value = data[key];
   });
 }
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("accessibilityForm");
+
+  if (form) {
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const accessibilityData = {};
+
+      for (const [key, value] of formData.entries()) {
+        accessibilityData[key] = value;
+      }
+
+      localStorage.setItem("accessibilityData", JSON.stringify(accessibilityData));
+
+      routeData.push({
+        type: "accessibility",
+        timestamp: Date.now(),
+        content: accessibilityData
+      });
+
+      alert("✅ Questionnaire saved and added to route!");
+      closeAccessibilityForm();
+    });
+  }
+});
 
