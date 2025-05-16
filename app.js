@@ -1722,9 +1722,8 @@ function prefillAccessibilityForm(data) {
 }
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("accessibilityForm");
-
   if (form) {
-    form.addEventListener("submit", function(e) {
+    form.addEventListener("submit", function (e) {
       e.preventDefault();
       const formData = new FormData(e.target);
       const accessibilityData = {};
@@ -1746,4 +1745,3 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-
