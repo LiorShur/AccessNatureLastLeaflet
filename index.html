@@ -147,97 +147,79 @@
       <ul id="savedSessionsList"></ul>
     </div>
   </div>
-  <div id="accessibilityFormOverlay" class="modal-overlay" style="display: none;" dir="rtl">
-  <div class="modal-box">
-    <h2>שאלון נגישות</h2>
+  <div id="accessibilityOverlay" style="display:none;">
+  <div id="accessibilityFormContainer">
+    <h2>🧭 Accessibility Questionnaire</h2>
     <form id="accessibilityForm">
-
-      <label>חניות נכים (כמה):</label>
-      <input type="number" name="disabledParking" required />
+      <label>חניות נכים – כמה:</label>
+      <input type="number" name="disabledParkingCount" required>
       <label>תמונה:</label>
-      <input type="file" accept="image/*" name="disabledParkingPhoto" />
+      <input type="file" name="disabledParkingImage" accept="image/*"><br><br>
 
       <label>תיאור הדרך:</label>
       <select name="pathType" required>
-        <option value="">בחר סוג דרך</option>
-        <option value="אספלט">אספלט</option>
-        <option value="בטון">בטון</option>
-        <option value="דק עץ">דק עץ</option>
-        <option value="כורכר">כורכר (לא נגיש)</option>
+        <option value="">בחר</option>
+        <option>אספלט</option>
+        <option>בטון</option>
+        <option>דק עץ</option>
+        <option>שביל כורכר (לא נגיש)</option>
       </select>
       <label>תמונה:</label>
-      <input type="file" accept="image/*" name="pathPhoto" />
+      <input type="file" name="pathImage" accept="image/*"><br><br>
 
-      <label>אורך הדרך הנגישה (מטרים):</label>
-      <input type="number" name="accessibleLength" />
+      <label>אורך הדרך הנגישה (במטרים):</label>
+      <input type="number" name="accessibleLength" required>
 
-      <label>מבנה המסלול:</label>
+      <label>סוג המסלול:</label>
       <select name="routeType">
-        <option value="">בחר</option>
-        <option value="הלוך חזור">הלוך חזור</option>
-        <option value="מעגלי">מעגלי</option>
+        <option>הלוך חזור</option>
+        <option>מעגלי</option>
       </select>
 
-      <label>שיפוע הדרך:</label>
+      <label>שיפוע השביל:</label>
       <select name="slope">
-        <option value="">בחר</option>
-        <option value="ישרה">ישרה</option>
-        <option value="שיפועים מתונים">שיפועים מתונים</option>
-        <option value="שיפועים תלולים (לא נגיש)">שיפועים תלולים (לא נגיש)</option>
+        <option>אופקי</option>
+        <option>שיפועים מתונים</option>
+        <option>שיפועים תלולים (לא נגיש)</option>
       </select>
 
-      <label>נקודות מעניינות לאורך הדרך:</label>
-      <textarea name="interestingPoints"></textarea>
+      <label>נקודות עניין לאורך הדרך:</label>
+      <textarea name="pointsOfInterest"></textarea>
       <label>תמונה:</label>
-      <input type="file" accept="image/*" name="interestingPointsPhoto" />
+      <input type="file" name="poiImage" accept="image/*"><br><br>
 
-      <label>האם יש תצפיות:</label>
-      <select name="viewpoints">
-        <option value="">בחר</option>
-        <option value="כן">כן</option>
-        <option value="לא">לא</option>
-      </select>
-      <input type="file" accept="image/*" name="viewpointsPhoto" />
+      <label>תצפיות:</label>
+      <input type="checkbox" name="lookouts"> יש
+      <label>תמונה:</label>
+      <input type="file" name="lookoutImage" accept="image/*"><br><br>
 
       <label>פינות פיקניק נגישות:</label>
-      <select name="picnicAreas">
-        <option value="">בחר</option>
-        <option value="כן">כן</option>
-        <option value="לא">לא</option>
-      </select>
-      <input type="file" accept="image/*" name="picnicPhoto" />
+      <input type="checkbox" name="picnicSpots"> יש
+      <label>תמונה:</label>
+      <input type="file" name="picnicImage" accept="image/*"><br><br>
 
       <label>שירותי נכים:</label>
-      <select name="disabledToilets">
-        <option value="">בחר</option>
-        <option value="כן">כן</option>
-        <option value="לא">לא</option>
-      </select>
-      <input type="file" accept="image/*" name="toiletPhoto" />
+      <input type="checkbox" name="accessibleToilets"> יש
+      <label>תמונה:</label>
+      <input type="file" name="toiletImage" accept="image/*"><br><br>
 
-      <label>ספסלי מנוחה לאורך הדרך:</label>
-      <select name="restBenches">
-        <option value="">בחר</option>
-        <option value="כן">כן</option>
-        <option value="לא">לא</option>
-      </select>
-      <input type="file" accept="image/*" name="benchPhoto" />
+      <label>ספסלים לאורך הדרך:</label>
+      <input type="checkbox" name="benches"> יש
+      <label>תמונה:</label>
+      <input type="file" name="benchImage" accept="image/*"><br><br>
 
-      <label>האם המסלול מוצל:</label>
-      <select name="shadeLevel">
-        <option value="">בחר</option>
-        <option value="מוצל">מוצל</option>
-        <option value="חלקית">חלקית</option>
-        <option value="לא מוצל">לא מוצל</option>
-      </select>
+      <label>הצללה:</label>
+      <select name="shade">
+        <option>מוצל</option>
+        <option>מוצל חלקית</option>
+        <option>לא מוצל</option>
+      </select><br><br>
 
-      <br><br>
-      <button type="submit">שמור</button>
-      <button type="button" onclick="closeAccessibilityForm()">ביטול</button>
+      <button type="submit">✔️ שמור</button>
+      <button type="button" onclick="closeAccessibilityForm()">❌ ביטול</button>
     </form>
   </div>
 </div>
- 
 
 
   <input type="file" accept="image/*" capture="environment" id="photoInput" style="display: none" />
