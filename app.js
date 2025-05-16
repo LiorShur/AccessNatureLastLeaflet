@@ -314,54 +314,6 @@ window.stopTracking = function () {
   }
 };
 
-// function resetApp() {
-//   routeData = [];
-//   path = [];
-//   lastCoords = null;
-//   totalDistance = 0;
-//   elapsedTime = 0;
-//   startTime = null;
-//   isPaused = false;
-
-//   document.getElementById("distance").textContent = "0.00 km";
-//   document.getElementById("timer").textContent = "00:00:00";
-//   //document.getElementById("liveDistance").textContent = "0.00 km";
-//   //document.getElementById("liveTimer").textContent = "00:00:00";
-
-//   localStorage.removeItem("route_backup");
-
-
-//   if (map) {
-//   map.setView([0, 0], 15);
-//   marker.setLatLng([0, 0]);
-// }
-
-// // Trigger current location again
-// if (navigator.geolocation) {
-//   navigator.geolocation.getCurrentPosition(
-//     position => {
-//       const userLocation = {
-//         lat: position.coords.latitude,
-//         lng: position.coords.longitude
-//       };
-//       map.setView(userLocation, 17);
-//       marker.setLatLng(userLocation);
-//     },
-//     error => {
-//       console.warn("Geolocation failed or denied, using default.");
-//     }
-//   );
-// }
-
-
-//   stopAutoBackup();
-//   //document.getElementById("startBtn").disabled = false;
-//   setTrackingButtonsEnabled(true);
-//   document.getElementById("resetBtn").disabled = false;
-
-//   console.log("🧹 App reset — ready for a new session!");
-// }
-
 function resetApp() {
   // Clear state
   routeData = [];
@@ -622,6 +574,29 @@ window.addEventListener("DOMContentLoaded", () => {
       reader.readAsDataURL(file);
     }
   });
+});
+
+function openAccessibilityForm() {
+  document.getElementById("accessibilityOverlay").style.display = "flex";
+}
+
+function closeAccessibilityForm() {
+  document.getElementById("accessibilityOverlay").style.display = "none";
+}
+
+// Save handler
+document.getElementById("accessibilityForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const accessibilityData = {};
+
+  for (const [key, value] of formData.entries()) {
+    accessibilityData[key] = value;
+  }
+
+  localStorage.setItem("accessibilityData", JSON.stringify(accessibilityData));
+  alert("✅ Questionnaire saved!");
+  closeAccessibilityForm();
 });
 
 // ===  ROUTE & NOTES ===
