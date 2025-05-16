@@ -234,7 +234,8 @@ function disableStartButton() {
 }
 
 window.startTracking = function () {
-  
+  openAccessibilityForm();
+
   setTrackingButtonsEnabled(true);
   document.getElementById("startBtn").disabled = true;
   document.getElementById("resetBtn").disabled = true;
@@ -299,6 +300,8 @@ window.stopTracking = function () {
   if (watchId) navigator.geolocation.clearWatch(watchId);
   stopTimer();
   stopAutoBackup();
+const wantsToFill = confirm("Do you want to fill out the accessibility questionnaire?");
+if (wantsToFill) openAccessibilityForm();
 
   const wantsToSave = confirm("💾 Do you want to save this route?");
   if (wantsToSave) {
