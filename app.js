@@ -1705,8 +1705,10 @@ function promptAccessibilityForm(callback) {
   };
 }
 function closeAccessibilityForm() {
-  document.getElementById("accessibilityFormOverlay").style.display = "none";
+  const container = document.getElementById("accessibilityFormContainer");
+  if (container) container.style.display = "none";
 }
+
 
 function prefillAccessibilityForm(data) {
   const form = document.getElementById("accessibilityForm");
