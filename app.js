@@ -1320,6 +1320,8 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
       height: 100px;
       font-size: 14px;
     }
+    #accessibilityDetails ul { list-style-type: none; padding-left: 0; }
+    #accessibilityDetails li { margin-bottom: 5px; }
   </style>
 </head>
 <body>
@@ -1332,8 +1334,6 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
     <div><b>Notes:</b> ${noteCounter - 1}</div>
     <div><b>Audios:</b> ${audioCounter - 1}</div>
   </div>
-  // Inject accessibility content
-
 
   <div id="description">
     <h4>General Description:</h4>
@@ -1343,10 +1343,6 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
   <h4>🧩 מידע על נגישות</h4>
   <pre id="accessibilityDataContainer"></pre>
 </div>
-const accessibilityEntry = routeData.find(e => e.type === "accessibility");
-const accessibilityHTML = generateAccessibilityHTML(accessibilityEntry ? accessibilityEntry.content : null);
-document.getElementById("summaryPanel").innerHTML += accessibilityHTML;
-
 </div>
 
 <div id="map"></div>
@@ -1392,6 +1388,48 @@ if (accessibility) {
 }
 
 </script>
+const accessibilityEntry = routeData.find(e => e.type === "accessibility");
+const accessibilityDataJSON = JSON.stringify(accessibilityEntry ? accessibilityEntry.content : null);
+
+const accessibilityScript = `
+<script>
+  // Store accessibility data globally
+  window.accessibilityContent = ${accessibilityDataJSON};
+
+  // Function to build accessibility HTML block
+  function generateAccessibilityHTML(data) {
+    if (!data) return "";
+
+    return \`
+    <div id="accessibilityDetails">
+      <h3>♿ Accessibility Details</h3>
+      <ul>
+        <li><b>Disabled Parking:</b> \${data.disabledParkingCount || "N/A"}</li>
+        <li><b>Path Type:</b> \${data.pathType || "N/A"}</li>
+        <li><b>Accessible Length:</b> \${data.accessibleLength || "N/A"} m</li>
+        <li><b>Route Type:</b> \${data.routeType || "N/A"}</li>
+        <li><b>Slope:</b> \${data.slope || "N/A"}</li>
+        <li><b>Points of Interest:</b> \${data.pointsOfInterest || "N/A"}</li>
+        <li><b>Lookouts:</b> \${data.lookouts ? "Yes" : "No"}</li>
+        <li><b>Picnic Spots:</b> \${data.picnicSpots ? "Yes" : "No"}</li>
+        <li><b>Accessible Toilets:</b> \${data.accessibleToilets ? "Yes" : "No"}</li>
+        <li><b>Benches:</b> \${data.benches ? "Yes" : "No"}</li>
+        <li><b>Shade:</b> \${data.shade || "N/A"}</li>
+      </ul>
+    </div>\`;
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const data = window.accessibilityContent;
+    if (data) {
+      const html = generateAccessibilityHTML(data);
+      const panel = document.getElementById("summaryPanel");
+      if (panel) panel.insertAdjacentHTML("beforeend", html);
+    }
+  });
+</script>
+`;
+
 </body>
 </html>
 `;
