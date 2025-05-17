@@ -1314,22 +1314,23 @@ const accessibilityEntry = routeData.find(e => e.type === "accessibility");
 if (accessibilityEntry) {
   const acc = accessibilityEntry.content;
   htmlContent += `
-  <div id="accessibilityDetails" style="padding: 20px; background: #eef;">
-    <h3>♿ Accessibility Details</h3>
-    <ul>
-      <li><b>Disabled Parking:</b> ${acc.disabledParkingCount}</li>
-      <li><b>Path Type:</b> ${acc.pathType}</li>
-      <li><b>Accessible Length:</b> ${acc.accessibleLength} m</li>
-      <li><b>Route Type:</b> ${acc.routeType}</li>
-      <li><b>Slope:</b> ${acc.slope}</li>
-      <li><b>Points of Interest:</b> ${acc.pointsOfInterest}</li>
-      <li><b>Lookouts:</b> ${acc.lookouts ? 'Yes' : 'No'}</li>
-      <li><b>Picnic Spots:</b> ${acc.picnicSpots ? 'Yes' : 'No'}</li>
-      <li><b>Accessible Toilets:</b> ${acc.accessibleToilets ? 'Yes' : 'No'}</li>
-      <li><b>Benches:</b> ${acc.benches ? 'Yes' : 'No'}</li>
-      <li><b>Shade:</b> ${acc.shade}</li>
-    </ul>
-  </div>`;
+<div id="accessibilityDetails" style="padding: 20px; background: #eef;">
+  <h3>♿ Accessibility Details</h3>
+  <ul>
+    <li><b>Disabled Parking:</b> ${acc.disabledParkingCount}</li>
+    <li><b>Path Type:</b> ${acc.pathType}</li>
+    <li><b>Accessible Length:</b> ${acc.accessibleLength} m</li>
+    <li><b>Route Type:</b> ${acc.routeType}</li>
+    <li><b>Slope:</b> ${acc.slope}</li>
+    <li><b>Points of Interest:</b> ${acc.pointsOfInterest}</li>
+    <li><b>Lookouts:</b> ${acc.lookouts ? 'Yes' : 'No'}</li>
+    <li><b>Picnic Spots:</b> ${acc.picnicSpots ? 'Yes' : 'No'}</li>
+    <li><b>Accessible Toilets:</b> ${acc.accessibleToilets ? 'Yes' : 'No'}</li>
+    <li><b>Benches:</b> ${acc.benches ? 'Yes' : 'No'}</li>
+    <li><b>Shade:</b> ${acc.shade}</li>
+  </ul>
+</div>
+`;
 }
 
   <div id="description">
