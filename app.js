@@ -1625,17 +1625,17 @@ function showFullScreen(img) {
     <div id="accessibilityDetails">
       <h3>♿ Accessibility Details</h3>
       <ul>
-        <li><b>Disabled Parking:</b> \${data.disabledParkingCount}</li>
-        <li><b>Path Type:</b> \${data.pathType}</li>
-        <li><b>Accessible Length:</b> \${data.accessibleLength} m</li>
-        <li><b>Route Type:</b> \${data.routeType}</li>
-        <li><b>Slope:</b> \${data.slope}</li>
-        <li><b>Points of Interest:</b> \${data.pointsOfInterest}</li>
-        <li><b>Lookouts:</b> \${data.lookouts ? "Yes" : "No"}</li>
-        <li><b>Picnic Spots:</b> \${data.picnicSpots ? "Yes" : "No"}</li>
-        <li><b>Accessible Toilets:</b> \${data.accessibleToilets ? "Yes" : "No"}</li>
-        <li><b>Benches:</b> \${data.benches ? "Yes" : "No"}</li>
-        <li><b>Shade:</b> \${data.shade}</li>
+        <li><b>חניות נכים / Disabled Parking:</b> \${data.disabledParkingCount}</li>
+        <li><b>סוג דרך / Path Type:</b> \${data.pathType}</li>
+        <li><b>אורך הדרך הנגישה / Accessible Length:</b> \${data.accessibleLength} m</li>
+        <li><b>מבנה המסלול / Route Type:</b> \${data.routeType}</li>
+        <li><b>שיפוע הדרך / Slope:</b> \${data.slope}</li>
+        <li><b>נקודות מעניינות לאורך הדרך / Points of Interest:</b> \${data.pointsOfInterest}</li>
+        <li><b>האם יש תצפיות / Lookouts:</b> \${data.lookouts ? "Yes" : "No"}</li>
+        <li><b>פינות פיקניק נגישות / Picnic Spots:</b> \${data.picnicSpots ? "Yes" : "No"}</li>
+        <li><b>שירותי נכים / Accessible Toilets:</b> \${data.accessibleToilets ? "Yes" : "No"}</li>
+        <li><b>ספסלי מנוחה לאורך הדרך / Benches:</b> \${data.benches ? "Yes" : "No"}</li>
+        <li><b>האם המסלול מוצל / Shade:</b> \${data.shade}</li>
       </ul>
     </div>\`;
   document.getElementById("accessibilityDetailsContainer").innerHTML = html;
