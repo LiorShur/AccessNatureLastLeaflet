@@ -1543,7 +1543,7 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
 
   const htmlContent = `
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <title>${name}</title>
