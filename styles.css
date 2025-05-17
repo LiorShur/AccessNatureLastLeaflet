@@ -305,6 +305,8 @@ background-color: #2196F3;
 }
 
 #accessibilityFormContainer {
+  direction: rtl;
+  text-align: right;
   background: #fff;
   padding: 20px;
   max-height: 90vh;
@@ -323,13 +325,16 @@ background-color: #2196F3;
 }
 
 #accessibilityForm label {
+  display: block;
+  margin-top: 8px;
   font-weight: bold;
-  margin-top: 5px;
 }
 
 #accessibilityForm input,
 #accessibilityForm select,
 #accessibilityForm textarea {
+  width: 100%;
+  margin-top: 2px;
   padding: 5px;
   font-size: 14px;
 }
