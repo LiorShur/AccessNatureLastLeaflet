@@ -1195,6 +1195,29 @@ const SummaryArchive = (() => {
   };
 })();
 
+function generateAccessibilityHTML(accessibilityData) {
+  if (!accessibilityData) return "";
+
+  return `
+    <div id="accessibilityDetails">
+      <h3>♿ Accessibility Details</h3>
+      <ul>
+        <li><b>Disabled Parking:</b> ${accessibilityData.disabledParkingCount || "N/A"}</li>
+        <li><b>Path Type:</b> ${accessibilityData.pathType || "N/A"}</li>
+        <li><b>Accessible Length:</b> ${accessibilityData.accessibleLength || "N/A"} m</li>
+        <li><b>Route Type:</b> ${accessibilityData.routeType || "N/A"}</li>
+        <li><b>Slope:</b> ${accessibilityData.slope || "N/A"}</li>
+        <li><b>Points of Interest:</b> ${accessibilityData.pointsOfInterest || "N/A"}</li>
+        <li><b>Lookouts:</b> ${accessibilityData.lookouts ? "Yes" : "No"}</li>
+        <li><b>Picnic Spots:</b> ${accessibilityData.picnicSpots ? "Yes" : "No"}</li>
+        <li><b>Accessible Toilets:</b> ${accessibilityData.accessibleToilets ? "Yes" : "No"}</li>
+        <li><b>Benches:</b> ${accessibilityData.benches ? "Yes" : "No"}</li>
+        <li><b>Shade:</b> ${accessibilityData.shade || "N/A"}</li>
+      </ul>
+    </div>
+  `;
+}
+
 async function exportRouteSummary() {
   console.log("📦 Attempting route export...");
 
@@ -1310,28 +1333,7 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
     <div><b>Audios:</b> ${audioCounter - 1}</div>
   </div>
   // Inject accessibility content
-const accessibilityEntry = routeData.find(e => e.type === "accessibility");
-if (accessibilityEntry) {
-  const acc = accessibilityEntry.content;
-  htmlContent += `
-<div id="accessibilityDetails" style="padding: 20px; background: #eef;">
-  <h3>♿ Accessibility Details</h3>
-  <ul>
-    <li><b>Disabled Parking:</b> ${acc.disabledParkingCount}</li>
-    <li><b>Path Type:</b> ${acc.pathType}</li>
-    <li><b>Accessible Length:</b> ${acc.accessibleLength} m</li>
-    <li><b>Route Type:</b> ${acc.routeType}</li>
-    <li><b>Slope:</b> ${acc.slope}</li>
-    <li><b>Points of Interest:</b> ${acc.pointsOfInterest}</li>
-    <li><b>Lookouts:</b> ${acc.lookouts ? 'Yes' : 'No'}</li>
-    <li><b>Picnic Spots:</b> ${acc.picnicSpots ? 'Yes' : 'No'}</li>
-    <li><b>Accessible Toilets:</b> ${acc.accessibleToilets ? 'Yes' : 'No'}</li>
-    <li><b>Benches:</b> ${acc.benches ? 'Yes' : 'No'}</li>
-    <li><b>Shade:</b> ${acc.shade}</li>
-  </ul>
-</div>
-`;
-}
+
 
   <div id="description">
     <h4>General Description:</h4>
@@ -1341,6 +1343,9 @@ if (accessibilityEntry) {
   <h4>🧩 מידע על נגישות</h4>
   <pre id="accessibilityDataContainer"></pre>
 </div>
+const accessibilityEntry = routeData.find(e => e.type === "accessibility");
+const accessibilityHTML = generateAccessibilityHTML(accessibilityEntry ? accessibilityEntry.content : null);
+document.getElementById("summaryPanel").innerHTML += accessibilityHTML;
 
 </div>
 
@@ -1527,26 +1532,8 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
   </div>
   // Inject accessibility content
 const accessibilityEntry = routeData.find(e => e.type === "accessibility");
-if (accessibilityEntry) {
-  const acc = accessibilityEntry.content;
-  htmlContent += `
-  <div id="accessibilityDetails" style="padding: 20px; background: #eef;">
-    <h3>♿ Accessibility Details</h3>
-    <ul>
-      <li><b>Disabled Parking:</b> ${acc.disabledParkingCount}</li>
-      <li><b>Path Type:</b> ${acc.pathType}</li>
-      <li><b>Accessible Length:</b> ${acc.accessibleLength} m</li>
-      <li><b>Route Type:</b> ${acc.routeType}</li>
-      <li><b>Slope:</b> ${acc.slope}</li>
-      <li><b>Points of Interest:</b> ${acc.pointsOfInterest}</li>
-      <li><b>Lookouts:</b> ${acc.lookouts ? 'Yes' : 'No'}</li>
-      <li><b>Picnic Spots:</b> ${acc.picnicSpots ? 'Yes' : 'No'}</li>
-      <li><b>Accessible Toilets:</b> ${acc.accessibleToilets ? 'Yes' : 'No'}</li>
-      <li><b>Benches:</b> ${acc.benches ? 'Yes' : 'No'}</li>
-      <li><b>Shade:</b> ${acc.shade}</li>
-    </ul>
-  </div>`;
-}
+const accessibilityHTML = generateAccessibilityHTML(accessibilityEntry ? accessibilityEntry.content : null);
+document.getElementById("summaryPanel").innerHTML += accessibilityHTML;
 
   <div id="description">
     <h4>General Description:</h4>
