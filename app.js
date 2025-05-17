@@ -1835,18 +1835,6 @@ function showFullScreen(img) {
         <li><b>שירותי נכים / Accessible Toilets:</b> \${data.accessibleToilets ? "Yes" : "No"}</li>
         <li><b>ספסלי מנוחה לאורך הדרך / Benches:</b> \${data.benches ? "Yes" : "No"}</li>
         <li><b>האם המסלול מוצל / Shade:</b> \${data.shade}</li>
-        
-        // <li><b>Disabled Parking:</b> \${data.disabledParkingCount}</li>
-        // <li><b>Path Type:</b> \${data.pathType}</li>
-        // <li><b>Accessible Length:</b> \${data.accessibleLength} m</li>
-        // <li><b>Route Type:</b> \${data.routeType}</li>
-        // <li><b>Slope:</b> \${data.slope}</li>
-        // <li><b>Points of Interest:</b> \${data.pointsOfInterest}</li>
-        // <li><b>Lookouts:</b> \${data.lookouts ? "Yes" : "No"}</li>
-        // <li><b>Picnic Spots:</b> \${data.picnicSpots ? "Yes" : "No"}</li>
-        // <li><b>Accessible Toilets:</b> \${data.accessibleToilets ? "Yes" : "No"}</li>
-        // <li><b>Benches:</b> \${data.benches ? "Yes" : "No"}</li>
-        // <li><b>Shade:</b> \${data.shade}</li>
       </ul>
     </div>\`;
   document.getElementById("accessibilityDetailsContainer").innerHTML = html;
