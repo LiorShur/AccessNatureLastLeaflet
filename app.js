@@ -1674,9 +1674,17 @@ function clearAllAppData() {
 
   alert("✅ All app data has been cleared!");
 }
+let wasTimerRunning = false;
 
 function promptAccessibilityForm(callback) {
   document.getElementById("accessibilityFormOverlay").style.display = "flex";
+
+  if (timerInterval) {
+    wasTimerRunning = true;
+    clearInterval(timerInterval);
+  } else {
+    wasTimerRunning = false;
+  }
 
   const form = document.getElementById("accessibilityForm");
   form.onsubmit = e => {
@@ -1710,6 +1718,10 @@ function closeAccessibilityForm() {
     overlay.style.display = "none";
   } else {
     console.warn("⚠️ accessibilityOverlay not found.");
+  }
+  if (wasTimerRunning) {
+    startTime = Date.now() - elapsedTime;
+    timerInterval = setInterval(updateTimerDisplay, 1000);
   }
 }
 
