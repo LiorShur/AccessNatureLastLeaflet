@@ -864,7 +864,44 @@ window.loadSavedSessions = function () {
 
 // === LOAD A SESSION ===
 
-window.loadSession = function (index) {
+// window.loadSession = function (index) {
+//   const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
+//   const session = sessions[index];
+
+//   if (!session || !session.data || session.data.length === 0) {
+//     alert("❌ This session has no data to export.");
+//     return;
+//   }
+
+//   routeData = session.data;
+//   totalDistance = parseFloat(session.distance);
+//   elapsedTime = 0;
+//   lastCoords = null;
+
+//   path = routeData.filter(e => e.type === "location").map(e => e.coords);
+
+//   document.getElementById("timer").textContent = session.time;
+//   document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
+//   //document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
+
+//   const accessibilityEntry = session.data.find(e => e.type === "accessibility");
+//   if (accessibilityEntry) {
+//   prefillAccessibilityForm(accessibilityEntry.content);
+//   }
+
+//   initMap(() => {
+//     drawSavedRoutePath();
+//     showRouteDataOnMap();
+//     setTrackingButtonsEnabled(false);
+
+//     //disableStartButton();
+//   });
+
+//   //document.getElementById("exportSummaryBtn").disabled = false;
+// };
+
+// === LOAD SESSION + IndexDB===
+window.loadSession = async function (index) {
   const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
   const session = sessions[index];
 
@@ -873,7 +910,20 @@ window.loadSession = function (index) {
     return;
   }
 
-  routeData = session.data;
+  routeData = [];
+  for (const entry of session.data) {
+    if (entry.mediaId) {
+      try {
+        const base64 = await getMediaFromIndexedDB(entry.mediaId);
+        routeData.push({ ...entry, content: base64 });
+      } catch {
+        routeData.push({ ...entry, content: null });
+      }
+    } else {
+      routeData.push(entry);
+    }
+  }
+
   totalDistance = parseFloat(session.distance);
   elapsedTime = 0;
   lastCoords = null;
@@ -882,23 +932,16 @@ window.loadSession = function (index) {
 
   document.getElementById("timer").textContent = session.time;
   document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
-  //document.getElementById("liveDistance").textContent = totalDistance.toFixed(2) + " km";
-
-  const accessibilityEntry = session.data.find(e => e.type === "accessibility");
-  if (accessibilityEntry) {
-  prefillAccessibilityForm(accessibilityEntry.content);
-  }
 
   initMap(() => {
     drawSavedRoutePath();
     showRouteDataOnMap();
     setTrackingButtonsEnabled(false);
-
-    //disableStartButton();
   });
 
   //document.getElementById("exportSummaryBtn").disabled = false;
 };
+
 
 function drawSavedRoutePath() {
   if (!map || path.length === 0) return;
@@ -1303,254 +1346,6 @@ function generateAccessibilityHTML(accessibilityData) {
   `;
 }
 
-// async function exportRouteSummary() {
-//   console.log("📦 Attempting route export...");
-
-//   if (!routeData || !Array.isArray(routeData) || routeData.length === 0) {
-//     alert("⚠️ No route data available to export. Please track or load a route first.");
-//     return;
-//   }
-
-//   const hasLocation = routeData.some(entry => entry.type === "location");
-//   if (!hasLocation) {
-//     alert("⚠️ No location data found in this session.");
-//     return;
-//   }
-
-//   //const name = prompt("Enter a title for this route summary:");
-//   const mostRecent = JSON.parse(localStorage.getItem("sessions") || "[]").slice(-1)[0];
-//   const defaultName = mostRecent?.name || "My Route";
-//   const name = prompt("Enter a title for this route summary:", defaultName);
-
-//   if (!name) return;
-
-//   const zip = new JSZip();
-//   const notesFolder = zip.folder("notes");
-//   const imagesFolder = zip.folder("images");
-//   const audioFolder = zip.folder("audio");
-
-//   let markersJS = "";
-//   let pathCoords = [];
-//   let noteCounter = 1;
-//   let photoCounter = 1;
-//   let audioCounter = 1;
-//   let videoCounter = 1;
-
-//   for (const entry of routeData) {
-//     if (entry.type === "location") {
-//       pathCoords.push([entry.coords.lat, entry.coords.lng]);
-//     } else if (entry.type === "text") {
-//       notesFolder.file(`note${noteCounter}.txt`, entry.content);
-//       markersJS += `
-// L.marker([${entry.coords.lat}, ${entry.coords.lng}], {
-//   icon: L.divIcon({ className: 'custom-icon', html: '📝', iconSize: [24, 24] })
-// })
-//   .addTo(map)
-//   .bindTooltip("Note ${noteCounter++}")
-//   .bindPopup("<b>Note ${noteCounter - 1}</b><br><pre>${entry.content}</pre>");
-// `;
-//       noteCounter++;
-//     } else if (entry.type === "photo") {
-//       const base64Data = entry.content.split(",")[1];
-//       imagesFolder.file(`photo${photoCounter}.jpg`, base64Data, { base64: true });
-//       markersJS += `
-// L.marker([${entry.coords.lat}, ${entry.coords.lng}], {
-//   icon: L.divIcon({ className: 'custom-icon', html: '📸', iconSize: [24, 24] })
-// })
-//   .addTo(map)
-//   .bindTooltip("Photo ${photoCounter++}")
-//   .bindPopup("<b>Photo ${photoCounter - 1}</b><br><img src='images/photo${photoCounter - 1}.jpg' style='width:200px'>");
-// `;
-//       photoCounter++;
-//     } else if (entry.type === "audio") {
-//       const base64Data = entry.content.split(",")[1];
-//       audioFolder.file(`audio${audioCounter}.webm`, base64Data, { base64: true });
-//       markersJS += `
-// L.marker([${entry.coords.lat}, ${entry.coords.lng}])
-//   .addTo(map)
-//   .bindPopup("<b>Audio ${audioCounter}</b><br><audio controls src='audio/audio${audioCounter}.webm'></audio>");
-// `;
-//       audioCounter++;
-//     }
-//   }
-
-//   const boundsVar = JSON.stringify(pathCoords);
-
-//   const htmlContent = `
-// <!DOCTYPE html>
-// <html lang="en">
-// <head>
-//   <meta charset="UTF-8">
-//   <title>${name}</title>
-//   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-//   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-//   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-//   <style>
-//     body { margin: 0; font-family: Arial, sans-serif; }
-//     #map { height: 60vh; }
-//     #summaryPanel {
-//       padding: 20px;
-//       background: #f7f7f7;
-//     }
-//     #routeTitle {
-//       font-size: 24px;
-//       margin-bottom: 10px;
-//       color: #2c3e50;
-//     }
-//     .stats { margin-top: 10px; }
-//     .stats b { display: inline-block; width: 120px; }
-//     #description { margin-top: 20px; }
-//     #description textarea {
-//       width: 100%;
-//       height: 100px;
-//       font-size: 14px;
-//     }
-//     #accessibilityDetails ul { list-style-type: none; padding-left: 0; }
-//     #accessibilityDetails li { margin-bottom: 5px; }
-//   </style>
-// </head>
-// <body>
-// <div id="summaryPanel">
-//   <div id="routeTitle">📍 ${name}</div>
-//   <div class="stats">
-//     <div><b>Distance:</b> ${totalDistance.toFixed(2)} km</div>
-//     <div><b>Time:</b> ${document.getElementById("timer").textContent}</div>
-//     <div><b>Photos:</b> ${photoCounter - 1}</div>
-//     <div><b>Notes:</b> ${noteCounter - 1}</div>
-//     <div><b>Audios:</b> ${audioCounter - 1}</div>
-//   </div>
-
-//   <div id="description">
-//     <h4>General Description:</h4>
-//     <textarea placeholder="Add notes or observations about the route here..."></textarea>
-//   </div>
-//   <div class="accessibility-summary">
-//   <h4>🧩 מידע על נגישות</h4>
-//   <pre id="accessibilityDataContainer"></pre>
-// </div>
-// </div>
-
-// <div id="map"></div>
-// <script>
-// var map = L.map('map');
-// var bounds = L.latLngBounds(${boundsVar});
-// map.fitBounds(bounds);
-
-// L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-//   maxZoom: 18,
-//   attribution: '&copy; OpenStreetMap contributors'
-// }).addTo(map);
-
-// L.polyline(${JSON.stringify(pathCoords)}, { color: 'blue' }).addTo(map);
-
-// ${markersJS}
-
-// // Fullscreen photo viewer
-// function showFullScreen(img) {
-//   const overlay = document.createElement("div");
-//   overlay.style.position = "fixed";
-//   overlay.style.top = 0;
-//   overlay.style.left = 0;
-//   overlay.style.width = "100%";
-//   overlay.style.height = "100%";
-//   overlay.style.background = "rgba(0,0,0,0.9)";
-//   overlay.style.display = "flex";
-//   overlay.style.alignItems = "center";
-//   overlay.style.justifyContent = "center";
-//   overlay.style.zIndex = "9999";
-//   overlay.onclick = () => document.body.removeChild(overlay);
-
-//   const fullImg = document.createElement("img");
-//   fullImg.src = img.src;
-//   fullImg.style.maxWidth = "90%";
-//   fullImg.style.maxHeight = "90%";
-//   overlay.appendChild(fullImg);
-//   document.body.appendChild(overlay);
-// }
-// const accessibility = route.find(e => e.type === "accessibility");
-// if (accessibility) {
-//   document.getElementById("accessibilityDataContainer").textContent = JSON.stringify(accessibility.content, null, 2);
-// }
-
-// </script>
-// const accessibilityEntry = routeData.find(e => e.type === "accessibility");
-// const accessibilityDataJSON = JSON.stringify(accessibilityEntry ? accessibilityEntry.content : null);
-
-// const accessibilityScript = `
-// <script>
-//   // Store accessibility data globally
-//   window.accessibilityContent = ${accessibilityDataJSON};
-
-//   // Function to build accessibility HTML block
-//   function generateAccessibilityHTML(data) {
-//     if (!data) return "";
-
-//     return \`
-//     <div id="accessibilityDetails">
-//       <h3>♿ Accessibility Details</h3>
-//       <ul>
-//         <li><b>Disabled Parking:</b> \${data.disabledParkingCount || "N/A"}</li>
-//         <li><b>Path Type:</b> \${data.pathType || "N/A"}</li>
-//         <li><b>Accessible Length:</b> \${data.accessibleLength || "N/A"} m</li>
-//         <li><b>Route Type:</b> \${data.routeType || "N/A"}</li>
-//         <li><b>Slope:</b> \${data.slope || "N/A"}</li>
-//         <li><b>Points of Interest:</b> \${data.pointsOfInterest || "N/A"}</li>
-//         <li><b>Lookouts:</b> \${data.lookouts ? "Yes" : "No"}</li>
-//         <li><b>Picnic Spots:</b> \${data.picnicSpots ? "Yes" : "No"}</li>
-//         <li><b>Accessible Toilets:</b> \${data.accessibleToilets ? "Yes" : "No"}</li>
-//         <li><b>Benches:</b> \${data.benches ? "Yes" : "No"}</li>
-//         <li><b>Shade:</b> \${data.shade || "N/A"}</li>
-//       </ul>
-//     </div>\`;
-//   }
-
-//   document.addEventListener("DOMContentLoaded", function () {
-//     const data = window.accessibilityContent;
-//     if (data) {
-//       const html = generateAccessibilityHTML(data);
-//       const panel = document.getElementById("summaryPanel");
-//       if (panel) panel.insertAdjacentHTML("beforeend", html);
-//     }
-//   });
-// </script>
-// `;
-
-// </body>
-// </html>
-// `;
-
-//   // Optional: Save to local archive
-//   const mediaForArchive = {};
-//   routeData.forEach((entry, i) => {
-//     if (entry.type === "photo") {
-//       const base64 = entry.content.split(",")[1];
-//       mediaForArchive[`photo${i + 1}.jpg`] = base64;
-//     } else if (entry.type === "text") {
-//       mediaForArchive[`note${i + 1}.txt`] = entry.content;
-//     }
-//   });
-//   SummaryArchive.saveToArchive(name, htmlContent, mediaForArchive);
-
-//   zip.file("index.html", htmlContent);
-
-//   try {
-//     const blob = await zip.generateAsync({ type: "blob" });
-//     const url = URL.createObjectURL(blob);
-//     const a = document.createElement("a");
-//     a.href = url;
-//     a.download = `route-summary-${Date.now()}.zip`;
-//     a.click();
-//     console.log("✅ Route summary exported successfully.");
-//   } catch (e) {
-//     console.error("❌ Export failed:", e);
-//     alert("❌ Failed to export route summary.");
-//   }
-
-//   resetApp();
-//   initMap();
-// }
-
-
 async function exportRouteSummary() {
   console.log("📦 Attempting route export...");
 
@@ -1565,6 +1360,7 @@ async function exportRouteSummary() {
     return;
   }
 
+  //const name = prompt("Enter a title for this route summary:");
   const mostRecent = JSON.parse(localStorage.getItem("sessions") || "[]").slice(-1)[0];
   const defaultName = mostRecent?.name || "My Route";
   const name = prompt("Enter a title for this route summary:", defaultName);
@@ -1581,6 +1377,7 @@ async function exportRouteSummary() {
   let noteCounter = 1;
   let photoCounter = 1;
   let audioCounter = 1;
+  let videoCounter = 1;
 
   for (const entry of routeData) {
     if (entry.type === "location") {
@@ -1592,8 +1389,8 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}], {
   icon: L.divIcon({ className: 'custom-icon', html: '📝', iconSize: [24, 24] })
 })
   .addTo(map)
-  .bindTooltip("Note ${noteCounter}")
-  .bindPopup("<b>Note ${noteCounter}</b><br><pre>${entry.content}</pre>");
+  .bindTooltip("Note ${noteCounter++}")
+  .bindPopup("<b>Note ${noteCounter - 1}</b><br><pre>${entry.content}</pre>");
 `;
       noteCounter++;
     } else if (entry.type === "photo") {
@@ -1604,8 +1401,8 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}], {
   icon: L.divIcon({ className: 'custom-icon', html: '📸', iconSize: [24, 24] })
 })
   .addTo(map)
-  .bindTooltip("Photo ${photoCounter}")
-  .bindPopup("<b>Photo ${photoCounter}</b><br><img src='images/photo${photoCounter}.jpg' style='width:200px'>");
+  .bindTooltip("Photo ${photoCounter++}")
+  .bindPopup("<b>Photo ${photoCounter - 1}</b><br><img src='images/photo${photoCounter - 1}.jpg' style='width:200px'>");
 `;
       photoCounter++;
     } else if (entry.type === "audio") {
@@ -1620,15 +1417,11 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
     }
   }
 
-  const accessibilityEntry = routeData.find(e => e.type === "accessibility");
-  const accessibilityData = accessibilityEntry ? accessibilityEntry.content : null;
-  const accessibilityJSON = JSON.stringify(accessibilityData);
-
   const boundsVar = JSON.stringify(pathCoords);
 
   const htmlContent = `
 <!DOCTYPE html>
-<html lang="en" dir="rtl">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>${name}</title>
@@ -1638,12 +1431,23 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
   <style>
     body { margin: 0; font-family: Arial, sans-serif; }
     #map { height: 60vh; }
-    #summaryPanel { padding: 20px; background: #f7f7f7; }
-    #routeTitle { font-size: 24px; margin-bottom: 10px; color: #2c3e50; }
+    #summaryPanel {
+      padding: 20px;
+      background: #f7f7f7;
+    }
+    #routeTitle {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
     .stats { margin-top: 10px; }
     .stats b { display: inline-block; width: 120px; }
     #description { margin-top: 20px; }
-    #description textarea { width: 100%; height: 100px; font-size: 14px; }
+    #description textarea {
+      width: 100%;
+      height: 100px;
+      font-size: 14px;
+    }
     #accessibilityDetails ul { list-style-type: none; padding-left: 0; }
     #accessibilityDetails li { margin-bottom: 5px; }
   </style>
@@ -1658,11 +1462,15 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
     <div><b>Notes:</b> ${noteCounter - 1}</div>
     <div><b>Audios:</b> ${audioCounter - 1}</div>
   </div>
+
   <div id="description">
     <h4>General Description:</h4>
     <textarea placeholder="Add notes or observations about the route here..."></textarea>
   </div>
-  <div id="accessibilityDetailsContainer"></div>
+  <div class="accessibility-summary">
+  <h4>🧩 מידע על נגישות</h4>
+  <pre id="accessibilityDataContainer"></pre>
+</div>
 </div>
 
 <div id="map"></div>
@@ -1702,34 +1510,59 @@ function showFullScreen(img) {
   overlay.appendChild(fullImg);
   document.body.appendChild(overlay);
 }
-// Accessibility summary rendering
-(function(){
-  const data = ${accessibilityJSON};
-  if (!data) return;
-  const html = \`
+const accessibility = route.find(e => e.type === "accessibility");
+if (accessibility) {
+  document.getElementById("accessibilityDataContainer").textContent = JSON.stringify(accessibility.content, null, 2);
+}
+
+</script>
+const accessibilityEntry = routeData.find(e => e.type === "accessibility");
+const accessibilityDataJSON = JSON.stringify(accessibilityEntry ? accessibilityEntry.content : null);
+
+const accessibilityScript = `
+<script>
+  // Store accessibility data globally
+  window.accessibilityContent = ${accessibilityDataJSON};
+
+  // Function to build accessibility HTML block
+  function generateAccessibilityHTML(data) {
+    if (!data) return "";
+
+    return \`
     <div id="accessibilityDetails">
       <h3>♿ Accessibility Details</h3>
       <ul>
-        <li><b>חניות נכים / Disabled Parking:</b> \${data.disabledParkingCount}</li>
-        <li><b>סוג דרך / Path Type:</b> \${data.pathType}</li>
-        <li><b>אורך הדרך הנגישה / Accessible Length:</b> \${data.accessibleLength} m</li>
-        <li><b>מבנה המסלול / Route Type:</b> \${data.routeType}</li>
-        <li><b>שיפוע הדרך / Slope:</b> \${data.slope}</li>
-        <li><b>נקודות מעניינות לאורך הדרך / Points of Interest:</b> \${data.pointsOfInterest}</li>
-        <li><b>האם יש תצפיות / Lookouts:</b> \${data.lookouts ? "Yes" : "No"}</li>
-        <li><b>פינות פיקניק נגישות / Picnic Spots:</b> \${data.picnicSpots ? "Yes" : "No"}</li>
-        <li><b>שירותי נכים / Accessible Toilets:</b> \${data.accessibleToilets ? "Yes" : "No"}</li>
-        <li><b>ספסלי מנוחה לאורך הדרך / Benches:</b> \${data.benches ? "Yes" : "No"}</li>
-        <li><b>האם המסלול מוצל / Shade:</b> \${data.shade}</li>
+        <li><b>Disabled Parking:</b> \${data.disabledParkingCount || "N/A"}</li>
+        <li><b>Path Type:</b> \${data.pathType || "N/A"}</li>
+        <li><b>Accessible Length:</b> \${data.accessibleLength || "N/A"} m</li>
+        <li><b>Route Type:</b> \${data.routeType || "N/A"}</li>
+        <li><b>Slope:</b> \${data.slope || "N/A"}</li>
+        <li><b>Points of Interest:</b> \${data.pointsOfInterest || "N/A"}</li>
+        <li><b>Lookouts:</b> \${data.lookouts ? "Yes" : "No"}</li>
+        <li><b>Picnic Spots:</b> \${data.picnicSpots ? "Yes" : "No"}</li>
+        <li><b>Accessible Toilets:</b> \${data.accessibleToilets ? "Yes" : "No"}</li>
+        <li><b>Benches:</b> \${data.benches ? "Yes" : "No"}</li>
+        <li><b>Shade:</b> \${data.shade || "N/A"}</li>
       </ul>
     </div>\`;
-  document.getElementById("accessibilityDetailsContainer").innerHTML = html;
-})();
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const data = window.accessibilityContent;
+    if (data) {
+      const html = generateAccessibilityHTML(data);
+      const panel = document.getElementById("summaryPanel");
+      if (panel) panel.insertAdjacentHTML("beforeend", html);
+    }
+  });
 </script>
+`;
+
 </body>
 </html>
 `;
 
+  // Optional: Save to local archive
   const mediaForArchive = {};
   routeData.forEach((entry, i) => {
     if (entry.type === "photo") {
@@ -1760,6 +1593,7 @@ function showFullScreen(img) {
   initMap();
 }
 
+
 async function exportAllRoutes() {
   const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
 
@@ -1783,9 +1617,6 @@ async function exportAllRoutes() {
     let noteCounter = 1;
     let photoCounter = 1;
     let audioCounter = 1;
-
-    let accessibilityEntry = session.data.find(e => e.type === "accessibility");
-    const accessibilityJSON = JSON.stringify(accessibilityEntry ? accessibilityEntry.content : null);
 
     for (const entry of session.data) {
       if (entry.type === "location") {
@@ -1821,7 +1652,11 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
         audioCounter++;
       }
     }
-
+    
+  const accessibilityEntry = routeData.find(e => e.type === "accessibility");
+  const accessibilityData = accessibilityEntry ? accessibilityEntry.content : null;
+  const accessibilityJSON = JSON.stringify(accessibilityData);
+    
     if (pathCoords.length === 0) continue;
 
     const boundsVar = JSON.stringify(pathCoords);
@@ -1837,12 +1672,23 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
   <style>
     body { margin: 0; font-family: Arial, sans-serif; }
     #map { height: 60vh; }
-    #summaryPanel { padding: 20px; background: #f7f7f7; }
-    #routeTitle { font-size: 24px; margin-bottom: 10px; color: #2c3e50; }
+    #summaryPanel {
+      padding: 20px;
+      background: #f7f7f7;
+    }
+    #routeTitle {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
     .stats { margin-top: 10px; }
     .stats b { display: inline-block; width: 120px; }
     #description { margin-top: 20px; }
-    #description textarea { width: 100%; height: 100px; font-size: 14px; }
+    #description textarea {
+      width: 100%;
+      height: 100px;
+      font-size: 14px;
+    }
     #accessibilityDetails ul { list-style-type: none; padding-left: 0; }
     #accessibilityDetails li { margin-bottom: 5px; }
   </style>
@@ -1857,6 +1703,11 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
     <div><b>Notes:</b> ${noteCounter - 1}</div>
     <div><b>Audios:</b> ${audioCounter - 1}</div>
   </div>
+  // Inject accessibility content
+const accessibilityEntry = routeData.find(e => e.type === "accessibility");
+const accessibilityHTML = generateAccessibilityHTML(accessibilityEntry ? accessibilityEntry.content : null);
+document.getElementById("summaryPanel").innerHTML += accessibilityHTML;
+
   <div id="description">
     <h4>General Description:</h4>
     <textarea placeholder="Add notes or observations about the route here..."></textarea>
@@ -1902,6 +1753,29 @@ function showFullScreen(img) {
   document.body.appendChild(overlay);
 }
 
+// Fullscreen photo viewer
+function showFullScreen(img) {
+  const overlay = document.createElement("div");
+  overlay.style.position = "fixed";
+  overlay.style.top = 0;
+  overlay.style.left = 0;
+  overlay.style.width = "100%";
+  overlay.style.height = "100%";
+  overlay.style.background = "rgba(0,0,0,0.9)";
+  overlay.style.display = "flex";
+  overlay.style.alignItems = "center";
+  overlay.style.justifyContent = "center";
+  overlay.style.zIndex = "9999";
+  overlay.onclick = () => document.body.removeChild(overlay);
+
+  const fullImg = document.createElement("img");
+  fullImg.src = img.src;
+  fullImg.style.maxWidth = "90%";
+  fullImg.style.maxHeight = "90%";
+  overlay.appendChild(fullImg);
+  document.body.appendChild(overlay);
+}
+// Accessibility summary rendering
 (function(){
   const data = ${accessibilityJSON};
   if (!data) return;
@@ -1909,17 +1783,17 @@ function showFullScreen(img) {
     <div id="accessibilityDetails">
       <h3>♿ Accessibility Details</h3>
       <ul>
-        <li><b>חניות נכים / Disabled Parking:</b> \${data.disabledParkingCount}</li>
-        <li><b>סוג דרך / Path Type:</b> \${data.pathType}</li>
-        <li><b>אורך הדרך הנגישה / Accessible Length:</b> \${data.accessibleLength} m</li>
-        <li><b>מבנה המסלול / Route Type:</b> \${data.routeType}</li>
-        <li><b>שיפוע הדרך / Slope:</b> \${data.slope}</li>
-        <li><b>נקודות מעניינות לאורך הדרך / Points of Interest:</b> \${data.pointsOfInterest}</li>
-        <li><b>האם יש תצפיות / Lookouts:</b> \${data.lookouts ? "Yes" : "No"}</li>
-        <li><b>פינות פיקניק נגישות / Picnic Spots:</b> \${data.picnicSpots ? "Yes" : "No"}</li>
-        <li><b>שירותי נכים / Accessible Toilets:</b> \${data.accessibleToilets ? "Yes" : "No"}</li>
-        <li><b>ספסלי מנוחה לאורך הדרך / Benches:</b> \${data.benches ? "Yes" : "No"}</li>
-        <li><b>האם המסלול מוצל / Shade:</b> \${data.shade}</li>
+        <li><b>Disabled Parking:</b> \${data.disabledParkingCount}</li>
+        <li><b>Path Type:</b> \${data.pathType}</li>
+        <li><b>Accessible Length:</b> \${data.accessibleLength} m</li>
+        <li><b>Route Type:</b> \${data.routeType}</li>
+        <li><b>Slope:</b> \${data.slope}</li>
+        <li><b>Points of Interest:</b> \${data.pointsOfInterest}</li>
+        <li><b>Lookouts:</b> \${data.lookouts ? "Yes" : "No"}</li>
+        <li><b>Picnic Spots:</b> \${data.picnicSpots ? "Yes" : "No"}</li>
+        <li><b>Accessible Toilets:</b> \${data.accessibleToilets ? "Yes" : "No"}</li>
+        <li><b>Benches:</b> \${data.benches ? "Yes" : "No"}</li>
+        <li><b>Shade:</b> \${data.shade}</li>
       </ul>
     </div>\`;
   document.getElementById("accessibilityDetailsContainer").innerHTML = html;
@@ -1940,6 +1814,7 @@ function showFullScreen(img) {
     });
   }
 
+  // Build the explorer HTML
   let explorerHTML = `
 <!DOCTYPE html>
 <html lang="en">
@@ -1992,6 +1867,7 @@ function showFullScreen(img) {
 
   zip.file("explorer.html", explorerHTML);
 
+  // Final ZIP
   try {
     const blob = await zip.generateAsync({ type: "blob" });
     const url = URL.createObjectURL(blob);
@@ -2005,294 +1881,6 @@ function showFullScreen(img) {
     alert("❌ Export failed.");
   }
 }
-
-// async function exportAllRoutes() {
-//   const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
-
-//   if (sessions.length === 0) {
-//     alert("No saved sessions to export!");
-//     return;
-//   }
-
-//   const zip = new JSZip();
-//   const explorerTableRows = [];
-
-//   for (const session of sessions) {
-//     const folderName = session.name.toLowerCase().replace(/\s+/g, "-");
-//     const sessionFolder = zip.folder(`routes/${folderName}`);
-//     const notesFolder = sessionFolder.folder("notes");
-//     const imagesFolder = sessionFolder.folder("images");
-//     const audioFolder = sessionFolder.folder("audio");
-
-//     let markersJS = "";
-//     let pathCoords = [];
-//     let noteCounter = 1;
-//     let photoCounter = 1;
-//     let audioCounter = 1;
-
-//     for (const entry of session.data) {
-//       if (entry.type === "location") {
-//         pathCoords.push([entry.coords.lat, entry.coords.lng]);
-//       } else if (entry.type === "text") {
-//         notesFolder.file(`note${noteCounter}.txt`, entry.content);
-//         markersJS += `
-// L.marker([${entry.coords.lat}, ${entry.coords.lng}])
-//   .addTo(map)
-//   .bindPopup("<b>Note ${noteCounter}</b><br><pre>${entry.content}</pre>");
-// `;
-//         noteCounter++;
-//       } else if (entry.type === "photo") {
-//         const base64Data = entry.content.split(",")[1];
-//         imagesFolder.file(`photo${photoCounter}.jpg`, base64Data, { base64: true });
-//         markersJS += `
-// L.marker([${entry.coords.lat}, ${entry.coords.lng}])
-//   .addTo(map)
-//   .bindPopup(\`
-//     <b>Photo ${photoCounter}</b><br>
-//     <img src='images/photo${photoCounter}.jpg' style='width:200px;cursor:pointer' onclick='showFullScreen(this)'>
-//   \`);
-// `;
-//         photoCounter++;
-//       } else if (entry.type === "audio") {
-//         const base64Data = entry.content.split(",")[1];
-//         audioFolder.file(`audio${audioCounter}.webm`, base64Data, { base64: true });
-//         markersJS += `
-// L.marker([${entry.coords.lat}, ${entry.coords.lng}])
-//   .addTo(map)
-//   .bindPopup("<b>Audio ${audioCounter}</b><br><audio controls src='audio/audio${audioCounter}.webm'></audio>");
-// `;
-//         audioCounter++;
-//       }
-//     }
-    
-//   const accessibilityEntry = routeData.find(e => e.type === "accessibility");
-//   const accessibilityData = accessibilityEntry ? accessibilityEntry.content : null;
-//   const accessibilityJSON = JSON.stringify(accessibilityData);
-    
-//     if (pathCoords.length === 0) continue;
-
-//     const boundsVar = JSON.stringify(pathCoords);
-//     const sessionHTML = `
-// <!DOCTYPE html>
-// <html lang="en">
-// <head>
-//   <meta charset="UTF-8">
-//   <title>${session.name}</title>
-//   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-//   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-//   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-//   <style>
-//     body { margin: 0; font-family: Arial, sans-serif; }
-//     #map { height: 60vh; }
-//     #summaryPanel {
-//       padding: 20px;
-//       background: #f7f7f7;
-//     }
-//     #routeTitle {
-//       font-size: 24px;
-//       margin-bottom: 10px;
-//       color: #2c3e50;
-//     }
-//     .stats { margin-top: 10px; }
-//     .stats b { display: inline-block; width: 120px; }
-//     #description { margin-top: 20px; }
-//     #description textarea {
-//       width: 100%;
-//       height: 100px;
-//       font-size: 14px;
-//     }
-//     #accessibilityDetails ul { list-style-type: none; padding-left: 0; }
-//     #accessibilityDetails li { margin-bottom: 5px; }
-//   </style>
-// </head>
-// <body>
-// <div id="summaryPanel">
-//   <div id="routeTitle">📍 ${session.name}</div>
-//   <div class="stats">
-//     <div><b>Distance:</b> ${session.distance} km</div>
-//     <div><b>Time:</b> ${session.time}</div>
-//     <div><b>Photos:</b> ${photoCounter - 1}</div>
-//     <div><b>Notes:</b> ${noteCounter - 1}</div>
-//     <div><b>Audios:</b> ${audioCounter - 1}</div>
-//   </div>
-//   // Inject accessibility content
-// const accessibilityEntry = routeData.find(e => e.type === "accessibility");
-// const accessibilityHTML = generateAccessibilityHTML(accessibilityEntry ? accessibilityEntry.content : null);
-// document.getElementById("summaryPanel").innerHTML += accessibilityHTML;
-
-//   <div id="description">
-//     <h4>General Description:</h4>
-//     <textarea placeholder="Add notes or observations about the route here..."></textarea>
-//   </div>
-//   <div id="accessibilityDetailsContainer"></div>
-// </div>
-
-// <div id="map"></div>
-// <script>
-// var map = L.map('map');
-// var bounds = L.latLngBounds(${boundsVar});
-// map.fitBounds(bounds);
-
-// L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-//   maxZoom: 18,
-//   attribution: '&copy; OpenStreetMap contributors'
-// }).addTo(map);
-
-// L.polyline(${JSON.stringify(pathCoords)}, { color: 'blue' }).addTo(map);
-
-// ${markersJS}
-
-// // Fullscreen photo viewer
-// function showFullScreen(img) {
-//   const overlay = document.createElement("div");
-//   overlay.style.position = "fixed";
-//   overlay.style.top = 0;
-//   overlay.style.left = 0;
-//   overlay.style.width = "100%";
-//   overlay.style.height = "100%";
-//   overlay.style.background = "rgba(0,0,0,0.9)";
-//   overlay.style.display = "flex";
-//   overlay.style.alignItems = "center";
-//   overlay.style.justifyContent = "center";
-//   overlay.style.zIndex = "9999";
-//   overlay.onclick = () => document.body.removeChild(overlay);
-
-//   const fullImg = document.createElement("img");
-//   fullImg.src = img.src;
-//   fullImg.style.maxWidth = "90%";
-//   fullImg.style.maxHeight = "90%";
-//   overlay.appendChild(fullImg);
-//   document.body.appendChild(overlay);
-// }
-
-// // Fullscreen photo viewer
-// function showFullScreen(img) {
-//   const overlay = document.createElement("div");
-//   overlay.style.position = "fixed";
-//   overlay.style.top = 0;
-//   overlay.style.left = 0;
-//   overlay.style.width = "100%";
-//   overlay.style.height = "100%";
-//   overlay.style.background = "rgba(0,0,0,0.9)";
-//   overlay.style.display = "flex";
-//   overlay.style.alignItems = "center";
-//   overlay.style.justifyContent = "center";
-//   overlay.style.zIndex = "9999";
-//   overlay.onclick = () => document.body.removeChild(overlay);
-
-//   const fullImg = document.createElement("img");
-//   fullImg.src = img.src;
-//   fullImg.style.maxWidth = "90%";
-//   fullImg.style.maxHeight = "90%";
-//   overlay.appendChild(fullImg);
-//   document.body.appendChild(overlay);
-// }
-// // Accessibility summary rendering
-// (function(){
-//   const data = ${accessibilityJSON};
-//   if (!data) return;
-//   const html = \`
-//     <div id="accessibilityDetails">
-//       <h3>♿ Accessibility Details</h3>
-//       <ul>
-//         <li><b>Disabled Parking:</b> \${data.disabledParkingCount}</li>
-//         <li><b>Path Type:</b> \${data.pathType}</li>
-//         <li><b>Accessible Length:</b> \${data.accessibleLength} m</li>
-//         <li><b>Route Type:</b> \${data.routeType}</li>
-//         <li><b>Slope:</b> \${data.slope}</li>
-//         <li><b>Points of Interest:</b> \${data.pointsOfInterest}</li>
-//         <li><b>Lookouts:</b> \${data.lookouts ? "Yes" : "No"}</li>
-//         <li><b>Picnic Spots:</b> \${data.picnicSpots ? "Yes" : "No"}</li>
-//         <li><b>Accessible Toilets:</b> \${data.accessibleToilets ? "Yes" : "No"}</li>
-//         <li><b>Benches:</b> \${data.benches ? "Yes" : "No"}</li>
-//         <li><b>Shade:</b> \${data.shade}</li>
-//       </ul>
-//     </div>\`;
-//   document.getElementById("accessibilityDetailsContainer").innerHTML = html;
-// })();
-// </script>
-// </body>
-// </html>
-// `;
-
-//     sessionFolder.file("index.html", sessionHTML);
-
-//     explorerTableRows.push({
-//       name: session.name,
-//       distance: session.distance,
-//       time: session.time,
-//       date: session.date,
-//       folder: folderName
-//     });
-//   }
-
-//   // Build the explorer HTML
-//   let explorerHTML = `
-// <!DOCTYPE html>
-// <html lang="en">
-// <head>
-//   <meta charset="UTF-8">
-//   <title>Route Explorer</title>
-//   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-//   <style>
-//     body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
-//     h1 { color: #2c3e50; }
-//     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-//     th, td { padding: 10px; border-bottom: 1px solid #ccc; text-align: left; }
-//     th { background: #3498db; color: white; }
-//     tr:hover { background: #eaf4fc; }
-//     a.button {
-//       background: #2980b9;
-//       color: white;
-//       padding: 6px 12px;
-//       border-radius: 4px;
-//       text-decoration: none;
-//     }
-//   </style>
-// </head>
-// <body>
-//   <h1>📦 Exported Route Summaries</h1>
-//   <table>
-//     <thead>
-//       <tr><th>Name</th><th>Distance</th><th>Time</th><th>Date</th><th>View</th></tr>
-//     </thead>
-//     <tbody>
-// `;
-
-//   explorerTableRows.forEach(row => {
-//     explorerHTML += `
-// <tr>
-//   <td>${row.name}</td>
-//   <td>${row.distance} km</td>
-//   <td>${row.time}</td>
-//   <td>${row.date.split("T")[0]}</td>
-//   <td><a class="button" href="routes/${row.folder}/index.html" target="_blank">Open</a></td>
-// </tr>`;
-//   });
-
-//   explorerHTML += `
-//     </tbody>
-//   </table>
-// </body>
-// </html>
-// `;
-
-//   zip.file("explorer.html", explorerHTML);
-
-//   // Final ZIP
-//   try {
-//     const blob = await zip.generateAsync({ type: "blob" });
-//     const url = URL.createObjectURL(blob);
-//     const a = document.createElement("a");
-//     a.href = url;
-//     a.download = `all-routes-${Date.now()}.zip`;
-//     a.click();
-//     console.log("✅ All routes exported successfully.");
-//   } catch (e) {
-//     console.error("❌ Failed to export all routes:", e);
-//     alert("❌ Export failed.");
-//   }
-// }
 
 
 function closeHistory() {
