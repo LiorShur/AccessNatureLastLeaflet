@@ -513,7 +513,8 @@ function compressImage(file, quality, callback) {
   };
   img.onload = () => {
     const canvas = document.createElement("canvas");
-    const maxWidth = 800;
+    const maxWidth = 600;  // Reduce max width
+    const quality = 0.5;   // Lower quality from 0.7 to 0.5
     const scale = Math.min(1, maxWidth / img.width);
     canvas.width = img.width * scale;
     canvas.height = img.height * scale;
@@ -719,16 +720,62 @@ window.addEventListener("beforeunload", function (e) {
   }
 });
 
+// window.saveSession = function () {
+//   console.log("🔍 Attempting to save session...");
+
+//     if (!routeData || routeData.length === 0) {
+//     alert("⚠️ No route data to save.");
+//     return false;
+//   }
+
+//   const name = prompt("Enter a name for this route:");
+//   if (!name) return false;
+
+//   const session = {
+//     name,
+//     date: new Date().toISOString(),
+//     time: document.getElementById("timer").textContent,
+//     distance: totalDistance.toFixed(2),
+//     data: routeData
+//   };
+
+//   try {
+//     const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
+//     sessions.push(session);
+//     localStorage.setItem("sessions", JSON.stringify(sessions));
+//     localStorage.removeItem("route_backup");
+
+//     alert(`✅ Route saved successfully!
+
+// 🏁 Route Summary:
+// 📏 Distance: ${totalDistance.toFixed(2)} km
+// ⏱️ Time: ${document.getElementById("timer").textContent}`);
+//     document.getElementById("resetBtn").disabled = false;
+//     loadSavedSessions();
+//     return true;
+//   } catch (e) {
+//     console.error("❌ Save failed:", e);
+//     alert("❌ Could not save the route.");
+//     return false;
+//   }
+//   document.getElementById("resetBtn").disabled = false;
+//   initMap();
+// };
+
 window.saveSession = function () {
   console.log("🔍 Attempting to save session...");
 
-    if (!routeData || routeData.length === 0) {
-    alert("⚠️ No route data to save.");
-    return false;
+  if (!routeData || routeData.length === 0) {
+    alert("⚠️ No route data to save. Please start tracking before saving.");
+    console.warn("❌ Save aborted: routeData is empty.");
+    return;
   }
 
   const name = prompt("Enter a name for this route:");
-  if (!name) return false;
+  if (!name) {
+    console.log("⛔ Save cancelled — no name provided.");
+    return;
+  }
 
   const session = {
     name,
@@ -738,28 +785,66 @@ window.saveSession = function () {
     data: routeData
   };
 
-  try {
-    const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
-    sessions.push(session);
-    localStorage.setItem("sessions", JSON.stringify(sessions));
-    localStorage.removeItem("route_backup");
-
-    alert(`✅ Route saved successfully!
-
-🏁 Route Summary:
-📏 Distance: ${totalDistance.toFixed(2)} km
-⏱️ Time: ${document.getElementById("timer").textContent}`);
-    document.getElementById("resetBtn").disabled = false;
-    loadSavedSessions();
-    return true;
-  } catch (e) {
-    console.error("❌ Save failed:", e);
-    alert("❌ Could not save the route.");
-    return false;
+  // ⚠️ Estimate session size
+  const estimatedSizeKB = new Blob([JSON.stringify(session)]).size / 1024;
+  console.log("Estimated session size:", estimatedSizeKB.toFixed(2), "KB");
+  if (estimatedSizeKB > 4500) {
+    alert("⚠️ This route is too large to save in local storage. Please export or reduce media.");
+    return;
   }
+
+  // 🌐 Save large media to IndexedDB
+  const indexedDBRequest = indexedDB.open("RouteMediaDB", 1);
+
+  indexedDBRequest.onupgradeneeded = function (event) {
+    const db = event.target.result;
+    if (!db.objectStoreNames.contains("media")) {
+      db.createObjectStore("media", { keyPath: "id" });
+    }
+  };
+
+  indexedDBRequest.onsuccess = function (event) {
+    const db = event.target.result;
+    const tx = db.transaction("media", "readwrite");
+    const store = tx.objectStore("media");
+
+    routeData.forEach((entry, i) => {
+      if (["photo", "audio", "video"].includes(entry.type)) {
+        const id = `media_${Date.now()}_${i}`;
+        store.put({ id, data: entry.content });
+        entry.mediaId = id;
+        delete entry.content;  // Detach base64
+      }
+    });
+
+    tx.oncomplete = function () {
+      try {
+        const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
+        sessions.push(session);
+        localStorage.setItem("sessions", JSON.stringify(sessions));
+        localStorage.removeItem("route_backup");
+
+        alert("✅ Route saved successfully!");
+        loadSavedSessions();
+      } catch (e) {
+        console.error("❌ Save failed. Possibly storage is full or corrupted:", e);
+        alert("❌ Could not save the route. Try exporting or clearing older data.");
+      }
+    };
+
+    tx.onerror = function (e) {
+      console.error("❌ IndexedDB transaction failed", e);
+    };
+  };
+
+  indexedDBRequest.onerror = function (e) {
+    console.error("❌ Failed to open IndexedDB", e);
+    alert("❌ Failed to open local database for saving media.");
+  };
   document.getElementById("resetBtn").disabled = false;
   initMap();
 };
+
 
 // === LOAD SESSION LIST ===
 window.loadSavedSessions = function () {
