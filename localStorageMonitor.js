@@ -26,23 +26,56 @@
     return `${(bytes / 1024).toFixed(1)} KB`;
   }
 
-  function getLocalStorageUsage() {
-    let total = 0;
-    let photoBytes = 0;
+  function getLocalStorageSizeInfo() {
+  let totalBytes = 0;
+  let photoBytes = 0;
 
-    for (const key in localStorage) {
-      if (localStorage.hasOwnProperty(key)) {
-        const value = localStorage.getItem(key);
-        const size = key.length + (value ? value.length : 0);
-        total += size;
+  for (let key in localStorage) {
+    if (!localStorage.hasOwnProperty(key)) continue;
 
-        if (key.toLowerCase().includes("photo") || (value && value.startsWith("data:image/"))) {
-          photoBytes += size;
-        }
+    const value = localStorage.getItem(key);
+    const bytes = new Blob([value]).size;
+    totalBytes += bytes;
+
+    // Check if value is a base64 image
+    if (typeof value === 'string' && value.startsWith("data:image/")) {
+      photoBytes += bytes;
+    }
+
+    // Alternatively, check for images in structured JSON
+    else if (value.includes("data:image/")) {
+      const matches = value.match(/data:image\/[^;]+;base64,[A-Za-z0-9+/=]+/g);
+      if (matches) {
+        matches.forEach(base64Img => {
+          photoBytes += new Blob([base64Img]).size;
+        });
       }
     }
-    return { total, photoBytes };
   }
+
+  return {
+    totalKB: (totalBytes / 1024).toFixed(1),
+    photoKB: (photoBytes / 1024).toFixed(1),
+    availableKB: ((5 * 1024) - (totalBytes / 1024)).toFixed(1)
+  };
+}
+
+function renderLocalStorageStatus() {
+  const div = document.getElementById("localStorageStatus");
+  if (!div) return;
+
+  const { totalKB, photoKB, availableKB } = getLocalStorageSizeInfo();
+
+  div.innerHTML = `
+    📦 localStorage Usage:<br>
+    • Used: ${totalKB} KB<br>
+    • Photos: ${photoKB} KB<br>
+    • Available: ${availableKB} KB
+  `;
+}
+
+setInterval(renderLocalStorageStatus, 2000); // Update every 2 seconds
+renderLocalStorageStatus(); // Initial call
 
   function updatePanel() {
     const { total, photoBytes } = getLocalStorageUsage();
