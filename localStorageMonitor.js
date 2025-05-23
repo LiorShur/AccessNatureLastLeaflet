@@ -46,26 +46,35 @@
     if (!localStorage.hasOwnProperty(key)) continue;
 
     const value = localStorage.getItem(key);
-    const bytes = new Blob([value]).size;
-    totalBytes += bytes;
+    if (!value) continue;
 
-    // Count photos by pattern matching base64 images
-    const imageMatches = value.match(/data:image\/[^;]+;base64,[A-Za-z0-9+/=]+/g);
-    if (imageMatches) {
-      imageMatches.forEach(base64 => {
-        photoBytes += new Blob([base64]).size;
-        photoCount += 1;
-      });
+    try {
+      const bytes = new Blob([value]).size;
+      totalBytes += bytes;
+
+      // Only count base64 image strings
+      if (value.startsWith("data:image/")) {
+        photoBytes += bytes;
+        photoCount++;
+      }
+
+    } catch (err) {
+      console.warn(`Error parsing localStorage key "${key}":`, err);
     }
   }
 
+  const maxKB = 5 * 1024; // localStorage ~5MB
+  const totalKB = totalBytes / 1024;
+  const availableKB = maxKB - totalKB;
+
   return {
-    totalKB: (totalBytes / 1024).toFixed(1),
+    totalKB: totalKB.toFixed(1),
+    availableKB: availableKB.toFixed(1),
     photoKB: (photoBytes / 1024).toFixed(1),
-    photoCount,
-    availableKB: ((5 * 1024) - (totalBytes / 1024)).toFixed(1)
+    photoCount
   };
 }
+
 
 function renderLocalStorageStatus() {
   const content = document.getElementById("storageContent");
