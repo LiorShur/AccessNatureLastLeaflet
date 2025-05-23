@@ -22,6 +22,17 @@
     document.body.appendChild(panel);
   }
 
+  function getLocalStorageUsage() {
+    let total = 0;
+    for (const key in localStorage) {
+      if (localStorage.hasOwnProperty(key)) {
+        const value = localStorage.getItem(key);
+        total += key.length + (value ? value.length : 0);
+      }
+    }
+    return total;
+  }
+
   function formatBytes(bytes) {
     return `${(bytes / 1024).toFixed(1)} KB`;
   }
