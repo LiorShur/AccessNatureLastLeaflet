@@ -51,23 +51,34 @@
       //   photoCount++;
       // }
       if (window.routeData && Array.isArray(window.routeData)) {
-  for (const item of window.routeData) {
-    if (item.type === "photo" && item.content && item.content.startsWith("data:image/")) {
+       for (const item of window.routeData) {
+      if (item.type === "photo" && item.content && item.content.startsWith("data:image/")) {
       photoCount++;
       photoBytes += new Blob([item.content]).size;
-    }
-  }
-}
+    } 
+  } 
+} 
     }
 
-    const maxBytes = 5 * 1024 * 1024;
-    return {
-      totalKB: (totalBytes / 1024).toFixed(1),
-      availableKB: ((maxBytes - totalBytes) / 1024).toFixed(1),
-      photoKB: (photoBytes / 1024).toFixed(1),
-      photoCount,
-      percent: ((totalBytes / maxBytes) * 100).toFixed(1)
-    };
+    // const maxBytes = 5 * 1024 * 1024;
+    // return {
+    //   totalKB: (totalBytes / 1024).toFixed(1),
+    //   availableKB: ((maxBytes - totalBytes) / 1024).toFixed(1),
+    //   photoKB: (photoBytes / 1024).toFixed(1),
+    //   photoCount,
+    //   percent: ((totalBytes / maxBytes) * 100).toFixed(1)
+    // };
+  const maxKB = 5 * 1024;
+  const totalKB = totalBytes / 1024;
+  const availableKB = maxKB - totalKB;
+
+  return {
+    totalKB: totalKB.toFixed(1),
+    availableKB: availableKB.toFixed(1),
+    photoKB: (photoBytes / 1024).toFixed(1),
+    photoCount,
+    photoBytes // ✅ Add this!
+  };
   }
 
   function renderLocalStorageStatus() {
