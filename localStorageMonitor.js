@@ -89,6 +89,7 @@
     const audio = document.getElementById("storageAlertAudio");
     //const { totalKB, availableKB, photoKB, photoCount, percent } = getLocalStorageSizeInfo();
     const { totalKB, availableKB, photoKB, photoCount, photoBytes } = getLocalStorageSizeInfo();
+    const percent = ((totalBytes / maxBytes) * 100).toFixed(1); // ✅ Calculate percent
   
     // content.innerHTML = `
     //   • Used: ${totalKB} KB (${percent}%)<br>
