@@ -78,6 +78,7 @@
     photoKB: (photoBytes / 1024).toFixed(1),
     photoCount,
     photoBytes // ✅ Add this!
+    totalBytes // optional but useful
   };
   }
 
@@ -86,14 +87,20 @@
     if (!content) return;
 
     const audio = document.getElementById("storageAlertAudio");
-    const { totalKB, availableKB, photoKB, photoCount, percent } = getLocalStorageSizeInfo();
-
-    content.innerHTML = `
-      • Used: ${totalKB} KB (${percent}%)<br>
-      • Photos: ${photoKB} KB (${photoCount})<br>
-      • Photos in memory: ${photoCount} (${(photoBytes / 1024).toFixed(1)} KB)
-      • Available: ${availableKB} KB
-    `;
+    //const { totalKB, availableKB, photoKB, photoCount, percent } = getLocalStorageSizeInfo();
+    const { totalKB, availableKB, photoKB, photoCount, photoBytes } = getLocalStorageSizeInfo();
+  
+    // content.innerHTML = `
+    //   • Used: ${totalKB} KB (${percent}%)<br>
+    //   • Photos: ${photoKB} KB (${photoCount})<br>
+    //   • Photos in memory: ${photoCount} (${(photoBytes / 1024).toFixed(1)} KB)
+    //   • Available: ${availableKB} KB
+    // `;
+  content.innerHTML = `
+    • Used: ${totalKB} KB<br>
+    • Photos in memory: ${photoCount} (${photoKB} KB)<br>
+    • Available: ${availableKB} KB
+  `;
 
     // Alert logic
     if (parseFloat(percent) >= 50) {
