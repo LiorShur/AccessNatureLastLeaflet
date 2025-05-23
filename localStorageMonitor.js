@@ -80,8 +80,8 @@ function renderLocalStorageStatus() {
   `;
 }
 
-setInterval(renderLocalStorageStatus, 2000);
-renderLocalStorageStatus();
+// setInterval(renderLocalStorageStatus, 2000);
+// renderLocalStorageStatus();
 
 // === Draggable functionality ===
 (function makeDraggable() {
