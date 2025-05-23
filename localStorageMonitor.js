@@ -80,6 +80,7 @@
     content.innerHTML = `
       • Used: ${totalKB} KB (${percent}%)<br>
       • Photos: ${photoKB} KB (${photoCount})<br>
+      • Photos in memory: ${photoCount} (${(photoBytes / 1024).toFixed(1)} KB)
       • Available: ${availableKB} KB
     `;
 
