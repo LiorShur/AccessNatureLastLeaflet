@@ -13,6 +13,12 @@
   <header id="header">
     <h1>🌿 Access Nature 🌿</h1>
   </header>
+<div id="localStorageStatus" class="storage-monitor">
+  <div class="header" id="storageHeader">📦 localStorage Monitor ▼</div>
+  <div class="content" id="storageContent">
+    <p>Checking usage...</p>
+  </div>
+</div>
 
   <div id="map"></div>
 <!--   <div id="liveStats">
@@ -240,7 +246,7 @@
   <!-- ✅ New: Leaflet.js -->
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <div id="localStorageStatus">📦 Checking localStorage...</div>
+<!--   <div id="localStorageStatus">📦 Checking localStorage...</div> -->
   <script type="module" src="localStorageMonitor.js"></script>
 
   <script src="app.js"></script>
