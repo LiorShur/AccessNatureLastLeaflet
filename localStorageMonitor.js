@@ -32,6 +32,10 @@
   }
 
   let alertPlayed = false;
+  const totalBytes = 0;
+  const photoBytes = 0;
+  const photoCount = 0;
+
 
   function getLocalStorageSizeInfo() {
     let totalBytes = 0;
