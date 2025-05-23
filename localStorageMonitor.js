@@ -78,7 +78,7 @@
     photoKB: (photoBytes / 1024).toFixed(1),
     photoCount,
     photoBytes // ✅ Add this!
-    totalBytes // optional but useful
+    //totalBytes // optional but useful
   };
   }
 
