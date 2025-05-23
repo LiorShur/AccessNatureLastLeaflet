@@ -46,10 +46,18 @@
       const size = new Blob([value]).size;
       totalBytes += size;
 
-      if (value.startsWith("data:image/")) {
-        photoBytes += size;
-        photoCount++;
-      }
+      // if (value.startsWith("data:image/")) {
+      //   photoBytes += size;
+      //   photoCount++;
+      // }
+      if (window.routeData && Array.isArray(window.routeData)) {
+  for (const item of window.routeData) {
+    if (item.type === "photo" && item.content && item.content.startsWith("data:image/")) {
+      photoCount++;
+      photoBytes += new Blob([item.content]).size;
+    }
+  }
+}
     }
 
     const maxBytes = 5 * 1024 * 1024;
