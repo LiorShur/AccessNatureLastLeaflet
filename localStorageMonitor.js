@@ -29,6 +29,7 @@
   function getLocalStorageSizeInfo() {
   let totalBytes = 0;
   let photoBytes = 0;
+  let photoCount = 0;
 
   for (let key in localStorage) {
     if (!localStorage.hasOwnProperty(key)) continue;
@@ -37,44 +38,78 @@
     const bytes = new Blob([value]).size;
     totalBytes += bytes;
 
-    // Check if value is a base64 image
-    if (typeof value === 'string' && value.startsWith("data:image/")) {
-      photoBytes += bytes;
-    }
-
-    // Alternatively, check for images in structured JSON
-    else if (value.includes("data:image/")) {
-      const matches = value.match(/data:image\/[^;]+;base64,[A-Za-z0-9+/=]+/g);
-      if (matches) {
-        matches.forEach(base64Img => {
-          photoBytes += new Blob([base64Img]).size;
-        });
-      }
+    // Count photos by pattern matching base64 images
+    const imageMatches = value.match(/data:image\/[^;]+;base64,[A-Za-z0-9+/=]+/g);
+    if (imageMatches) {
+      imageMatches.forEach(base64 => {
+        photoBytes += new Blob([base64]).size;
+        photoCount += 1;
+      });
     }
   }
 
   return {
     totalKB: (totalBytes / 1024).toFixed(1),
     photoKB: (photoBytes / 1024).toFixed(1),
+    photoCount,
     availableKB: ((5 * 1024) - (totalBytes / 1024)).toFixed(1)
   };
 }
 
 function renderLocalStorageStatus() {
-  const div = document.getElementById("localStorageStatus");
-  if (!div) return;
+  const content = document.getElementById("storageContent");
+  if (!content) return;
 
-  const { totalKB, photoKB, availableKB } = getLocalStorageSizeInfo();
+  const { totalKB, availableKB, photoKB, photoCount } = getLocalStorageSizeInfo();
 
-  div.innerHTML = `
-    📦 localStorage Usage:<br>
+  content.innerHTML = `
     • Used: ${totalKB} KB<br>
-    • Photos: ${photoKB} KB<br>
+    • Photos: ${photoKB} KB (${photoCount})<br>
     • Available: ${availableKB} KB
   `;
 }
 
-setInterval(renderLocalStorageStatus, 2000); // Update every 2 seconds
+setInterval(renderLocalStorageStatus, 2000);
+renderLocalStorageStatus();
+
+// === Draggable functionality ===
+(function makeDraggable() {
+  const panel = document.getElementById("localStorageStatus");
+  const header = document.getElementById("storageHeader");
+
+  let offsetX = 0, offsetY = 0, isDragging = false;
+
+  header.addEventListener("mousedown", e => {
+    isDragging = true;
+    offsetX = e.clientX - panel.offsetLeft;
+    offsetY = e.clientY - panel.offsetTop;
+    panel.style.transition = "none";
+  });
+
+  document.addEventListener("mouseup", () => isDragging = false);
+
+  document.addEventListener("mousemove", e => {
+    if (isDragging) {
+      panel.style.left = `${e.clientX - offsetX}px`;
+      panel.style.top = `${e.clientY - offsetY}px`;
+      panel.style.right = "auto";
+      panel.style.bottom = "auto";
+    }
+  });
+})();
+
+// === Collapsible toggle ===
+document.getElementById("storageHeader").addEventListener("click", () => {
+  const content = document.getElementById("storageContent");
+  const header = document.getElementById("storageHeader");
+
+  const isVisible = content.style.display !== "none";
+  content.style.display = isVisible ? "none" : "block";
+  header.textContent = isVisible ? "📦 localStorage Monitor ▲" : "📦 localStorage Monitor ▼";
+});
+
+
+setInterval(renderLocalStorageStatus, 1000); // Update every 1 seconds
 renderLocalStorageStatus(); // Initial call
 
   function updatePanel() {
