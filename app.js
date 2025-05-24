@@ -754,96 +754,20 @@ window.saveSession = function () {
     loadSavedSessions();
     return true;
   } catch (e) {
-    console.error("❌ Save failed:", e);
-    alert("❌ Could not save the route.");
+    // console.error("❌ Save failed:", e);
+    // alert("❌ Could not save the route.");
+    // return false;
+    console.warn("❌ Save failed due to storage limits. Falling back to auto-export...");
+    exportData();
+    exportGPX();
+    exportPDF();
+    exportRouteSummary(); // ✅ Use your rich summary generator
+    alert("🛡 Storage full. Auto-exported full route summary as backup.");
     return false;
   }
   document.getElementById("resetBtn").disabled = false;
   initMap();
 };
-
-// window.saveSession = function () {
-//   console.log("🔍 Attempting to save session...");
-
-//   if (!routeData || routeData.length === 0) {
-//     alert("⚠️ No route data to save. Please start tracking before saving.");
-//     console.warn("❌ Save aborted: routeData is empty.");
-//     return;
-//   }
-
-//   const name = prompt("Enter a name for this route:");
-//   if (!name) {
-//     console.log("⛔ Save cancelled — no name provided.");
-//     return;
-//   }
-
-//   const session = {
-//     name,
-//     date: new Date().toISOString(),
-//     time: document.getElementById("timer").textContent,
-//     distance: totalDistance.toFixed(2),
-//     data: routeData
-//   };
-
-//   // ⚠️ Estimate session size
-//   const estimatedSizeKB = new Blob([JSON.stringify(session)]).size / 1024;
-//   console.log("Estimated session size:", estimatedSizeKB.toFixed(2), "KB");
-//   if (estimatedSizeKB > 4500) {
-//     alert("⚠️ This route is too large to save in local storage. Please export or reduce media.");
-//     return;
-//   }
-
-//   // 🌐 Save large media to IndexedDB
-//   const indexedDBRequest = indexedDB.open("RouteMediaDB", 1);
-
-//   indexedDBRequest.onupgradeneeded = function (event) {
-//     const db = event.target.result;
-//     if (!db.objectStoreNames.contains("media")) {
-//       db.createObjectStore("media", { keyPath: "id" });
-//     }
-//   };
-
-//   indexedDBRequest.onsuccess = function (event) {
-//     const db = event.target.result;
-//     const tx = db.transaction("media", "readwrite");
-//     const store = tx.objectStore("media");
-
-//     routeData.forEach((entry, i) => {
-//       if (["photo", "audio", "video"].includes(entry.type)) {
-//         const id = `media_${Date.now()}_${i}`;
-//         store.put({ id, data: entry.content });
-//         entry.mediaId = id;
-//         delete entry.content;  // Detach base64
-//       }
-//     });
-
-//     tx.oncomplete = function () {
-//       try {
-//         const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
-//         sessions.push(session);
-//         localStorage.setItem("sessions", JSON.stringify(sessions));
-//         localStorage.removeItem("route_backup");
-
-//         alert("✅ Route saved successfully!");
-//         loadSavedSessions();
-//       } catch (e) {
-//         console.error("❌ Save failed. Possibly storage is full or corrupted:", e);
-//         alert("❌ Could not save the route. Try exporting or clearing older data.");
-//       }
-//     };
-
-//     tx.onerror = function (e) {
-//       console.error("❌ IndexedDB transaction failed", e);
-//     };
-//   };
-
-//   indexedDBRequest.onerror = function (e) {
-//     console.error("❌ Failed to open IndexedDB", e);
-//     alert("❌ Failed to open local database for saving media.");
-//   };
-//   document.getElementById("resetBtn").disabled = false;
-//   initMap();
-// };
 
 
 // === LOAD SESSION LIST ===
@@ -1018,17 +942,17 @@ window.exportData = function () {
 };
 
 // === EXPORT GPX ===
-window.exportData = function () {
-  const fileName = `route-${new Date().toISOString()}.json`;
-  const blob = new Blob([JSON.stringify(routeData, null, 2)], { type: "application/json" });
+// window.exportData = function () {
+//   const fileName = `route-${new Date().toISOString()}.json`;
+//   const blob = new Blob([JSON.stringify(routeData, null, 2)], { type: "application/json" });
 
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+//   const link = document.createElement("a");
+//   link.href = URL.createObjectURL(blob);
+//   link.download = fileName;
+//   document.body.appendChild(link);
+//   link.click();
+//   document.body.removeChild(link);
+// };
 
 window.exportGPX = function () {
   let gpx = `<?xml version="1.0" encoding="UTF-8"?>
@@ -2071,6 +1995,12 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     window.hasWarned = false;
   }
+    if (totalKB >= 2300 && !window.photoCleanupPromptShown) {
+  window.photoCleanupPromptShown = true;
+  alert("⚠️ You're nearing localStorage capacity. Would you like to delete stored photos?");
+  showPhotoCleanupDialog(); // Define this function next
+}
+
     //   panel.style.border = "2px solid red";
     //   panel.style.animation = "blink 1s infinite alternate";
     //   if (!alertPlayed) {
@@ -2121,3 +2051,90 @@ document.addEventListener("DOMContentLoaded", () => {
   renderLocalStorageStatus();
 })();
 
+function getLocalStoragePhotos() {
+  const photos = [];
+  for (const key in localStorage) {
+    const value = localStorage.getItem(key);
+    if (value && value.startsWith("data:image/")) {
+      photos.push({ key, value });
+    }
+  }
+  return photos;
+}
+function showPhotoCleanupDialog() {
+  const photos = getLocalStoragePhotos();
+  if (photos.length === 0) return alert("No stored images found.");
+
+  const overlay = document.createElement("div");
+  overlay.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:#000A;z-index:9999;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;overflow:auto;";
+  
+  photos.forEach(({ key, value }) => {
+    const imgWrapper = document.createElement("div");
+    imgWrapper.style = "margin:10px;position:relative;";
+
+    const img = document.createElement("img");
+    img.src = value;
+    img.style = "max-width:120px;max-height:120px;border:2px solid white;border-radius:4px;";
+    
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "🗑️";
+    delBtn.style = "position:absolute;top:0;right:0;background:red;color:white;border:none;border-radius:3px;";
+    delBtn.onclick = () => {
+      localStorage.removeItem(key);
+      imgWrapper.remove();
+    };
+
+    imgWrapper.appendChild(img);
+    imgWrapper.appendChild(delBtn);
+    overlay.appendChild(imgWrapper);
+  });
+
+  const closeBtn = document.createElement("button");
+  closeBtn.textContent = "Close";
+  closeBtn.style = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 20px;background:black;color:white;border:1px solid white;";
+  closeBtn.onclick = () => document.body.removeChild(overlay);
+
+  overlay.appendChild(closeBtn);
+  document.body.appendChild(overlay);
+}
+
+
+window.triggerImport = () => {
+  document.getElementById("importFile").click();
+};
+
+//  Import Routes
+document.getElementById("importFile").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const ext = file.name.split(".").pop().toLowerCase();
+
+  if (ext === "json") {
+    const text = await file.text();
+    try {
+      const data = JSON.parse(text);
+      if (!Array.isArray(data)) throw new Error("Invalid JSON format");
+
+      routeData = data;
+      path = data.filter(e => e.type === "location").map(e => e.coords);
+      totalDistance = parseFloat(data.find(e => e.distance)?.distance || 0);
+      elapsedTime = 0;
+
+      initMap(() => {
+        drawSavedRoutePath();
+        showRouteDataOnMap();
+        alert("✅ Route JSON imported successfully.");
+      });
+    } catch (err) {
+      alert("❌ Failed to import JSON.");
+      console.error(err);
+    }
+
+  } else if (ext === "gpx") {
+    alert("⚠️ GPX import not implemented yet.");
+    // Optional: we can use a library to parse GPX if you’d like
+  } else {
+    alert("❌ Unsupported file type.");
+  }
+});
