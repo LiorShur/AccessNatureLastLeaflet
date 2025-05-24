@@ -2062,41 +2062,188 @@ function getLocalStoragePhotos() {
   return photos;
 }
 function showPhotoCleanupDialog() {
-  const photos = getLocalStoragePhotos();
-  if (photos.length === 0) return alert("No stored images found.");
+  const photos = JSON.parse(localStorage.getItem("photos") || "[]");
 
+  if (photos.length === 0) {
+    alert("📷 No stored photos found.");
+    return;
+  }
+
+  // Prevent duplicates
+  if (document.getElementById("photoCleanupOverlay")) return;
+
+  // Create overlay
   const overlay = document.createElement("div");
-  overlay.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:#000A;z-index:9999;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;overflow:auto;";
-  
-  photos.forEach(({ key, value }) => {
-    const imgWrapper = document.createElement("div");
-    imgWrapper.style = "margin:10px;position:relative;";
+  overlay.id = "photoCleanupOverlay";
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+  `;
+
+  // Modal container
+  const modal = document.createElement("div");
+  modal.style.cssText = `
+    background: white;
+    width: 80%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 20px;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    cursor: move;
+  `;
+
+  // Header
+  const header = document.createElement("div");
+  header.textContent = "🧹 Photo Cleanup";
+  header.style.cssText = `
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 18px;
+    cursor: move;
+  `;
+  modal.appendChild(header);
+
+  // Close button
+  const closeBtn = document.createElement("button");
+  closeBtn.textContent = "✖";
+  closeBtn.style.cssText = `
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: crimson;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-weight: bold;
+  `;
+  closeBtn.onclick = () => overlay.remove();
+  modal.appendChild(closeBtn);
+
+  // Grid container for photos
+  const container = document.createElement("div");
+  container.style.cssText = `
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  `;
+
+  photos.forEach((photo, index) => {
+    if (!photo.content || !photo.content.startsWith("data:image")) return;
 
     const img = document.createElement("img");
-    img.src = value;
-    img.style = "max-width:120px;max-height:120px;border:2px solid white;border-radius:4px;";
-    
-    const delBtn = document.createElement("button");
-    delBtn.textContent = "🗑️";
-    delBtn.style = "position:absolute;top:0;right:0;background:red;color:white;border:none;border-radius:3px;";
-    delBtn.onclick = () => {
-      localStorage.removeItem(key);
+    img.src = photo.content;
+    img.alt = `Photo ${index + 1}`;
+    img.style.width = "100px";
+    img.style.height = "100px";
+    img.style.objectFit = "cover";
+    img.style.border = "1px solid #ccc";
+    img.style.borderRadius = "4px";
+
+    const imgWrapper = document.createElement("div");
+    imgWrapper.style.position = "relative";
+    imgWrapper.style.display = "inline-block";
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "🗑️";
+    deleteBtn.style.cssText = `
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 14px;
+      cursor: pointer;
+    `;
+
+    deleteBtn.onclick = () => {
+      photos.splice(index, 1);
+      localStorage.setItem("photos", JSON.stringify(photos));
       imgWrapper.remove();
+      renderLocalStorageStatus();
     };
 
     imgWrapper.appendChild(img);
-    imgWrapper.appendChild(delBtn);
-    overlay.appendChild(imgWrapper);
+    imgWrapper.appendChild(deleteBtn);
+    container.appendChild(imgWrapper);
   });
 
-  const closeBtn = document.createElement("button");
-  closeBtn.textContent = "Close";
-  closeBtn.style = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 20px;background:black;color:white;border:1px solid white;";
-  closeBtn.onclick = () => document.body.removeChild(overlay);
-
-  overlay.appendChild(closeBtn);
+  modal.appendChild(container);
+  overlay.appendChild(modal);
   document.body.appendChild(overlay);
+
+  // === Make Modal Draggable ===
+  let isDragging = false, offsetX = 0, offsetY = 0;
+
+  header.addEventListener("mousedown", e => {
+    isDragging = true;
+    offsetX = e.clientX - modal.offsetLeft;
+    offsetY = e.clientY - modal.offsetTop;
+    modal.style.transition = "none";
+    e.preventDefault();
+  });
+
+  document.addEventListener("mouseup", () => isDragging = false);
+
+  document.addEventListener("mousemove", e => {
+    if (isDragging) {
+      modal.style.position = "fixed";
+      modal.style.left = `${e.clientX - offsetX}px`;
+      modal.style.top = `${e.clientY - offsetY}px`;
+    }
+  });
 }
+
+// function showPhotoCleanupDialog() {
+//   const photos = getLocalStoragePhotos();
+//   if (photos.length === 0) return alert("No stored images found.");
+
+//   const overlay = document.createElement("div");
+//   overlay.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:#000A;z-index:9999;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;overflow:auto;";
+  
+//   photos.forEach(({ key, value }) => {
+//     const imgWrapper = document.createElement("div");
+//     imgWrapper.style = "margin:10px;position:relative;";
+
+//     const img = document.createElement("img");
+//     img.src = value;
+//     img.style = "max-width:120px;max-height:120px;border:2px solid white;border-radius:4px;";
+    
+//     const delBtn = document.createElement("button");
+//     delBtn.textContent = "🗑️";
+//     delBtn.style = "position:absolute;top:0;right:0;background:red;color:white;border:none;border-radius:3px;";
+//     delBtn.onclick = () => {
+//       localStorage.removeItem(key);
+//       imgWrapper.remove();
+//     };
+
+//     imgWrapper.appendChild(img);
+//     imgWrapper.appendChild(delBtn);
+//     overlay.appendChild(imgWrapper);
+//   });
+
+//   const closeBtn = document.createElement("button");
+//   closeBtn.textContent = "Close";
+//   closeBtn.style = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 20px;background:black;color:white;border:1px solid white;";
+//   closeBtn.onclick = () => document.body.removeChild(overlay);
+
+//   overlay.appendChild(closeBtn);
+//   document.body.appendChild(overlay);
+// }
 
 
 window.triggerImport = () => {
