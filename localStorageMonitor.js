@@ -50,10 +50,7 @@
       const size = new Blob([value]).size;
       totalBytes += size;
 
-      // if (value.startsWith("data:image/")) {
-      //   photoBytes += size;
-      //   photoCount++;
-      // }
+      
       if (window.routeData && Array.isArray(window.routeData)) {
        for (const item of window.routeData) {
       if (item.type === "photo" && item.content && item.content.startsWith("data:image/")) {
@@ -64,14 +61,6 @@
 } 
     }
 
-    // const maxBytes = 5 * 1024 * 1024;
-    // return {
-    //   totalKB: (totalBytes / 1024).toFixed(1),
-    //   availableKB: ((maxBytes - totalBytes) / 1024).toFixed(1),
-    //   photoKB: (photoBytes / 1024).toFixed(1),
-    //   photoCount,
-    //   percent: ((totalBytes / maxBytes) * 100).toFixed(1)
-    // };
   const maxKB = 5 * 1024;
   const totalKB = totalBytes / 1024;
   const availableKB = maxKB - totalKB;
@@ -98,12 +87,6 @@
     const maxBytes = 5 * 1024 * 1024;
     const percent = ((totalBytes / maxBytes) * 100).toFixed(1); // ✅ Calculate percent
   
-    // content.innerHTML = `
-    //   • Used: ${totalKB} KB (${percent}%)<br>
-    //   • Photos: ${photoKB} KB (${photoCount})<br>
-    //   • Photos in memory: ${photoCount} (${(photoBytes / 1024).toFixed(1)} KB)
-    //   • Available: ${availableKB} KB
-    // `;
   content.innerHTML = `
     • Used: ${totalKB} KB<br>
     • Photos in memory: ${photoCount} (${photoKB} KB)<br>
