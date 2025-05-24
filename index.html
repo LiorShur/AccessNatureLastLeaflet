@@ -105,6 +105,11 @@
  <div class="button-row purple">   
 <button id="clearAllAppDataBtn" onclick="clearAllAppData()">🧹 Clear Everything</button>
  </div>   
+<input type="file" id="importFile" accept=".json,.gpx" style="display: none" />
+<div class="button-row green">
+<button onclick="triggerImport()">📥 Import Route (JSON/GPX)</button>
+</div>
+
 <!-- <div id="archivePanel"></div>  
 <button onclick="SummaryArchive.showArchiveBrowser()">Browse Summaries</button>
     </div> -->
