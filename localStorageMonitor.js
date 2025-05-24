@@ -75,6 +75,7 @@
   const maxKB = 5 * 1024;
   const totalKB = totalBytes / 1024;
   const availableKB = maxKB - totalKB;
+  const maxBytes = 5 * 1024 * 1024;
 
   return {
     totalKB: totalKB.toFixed(1),
@@ -94,7 +95,7 @@
     //const { totalKB, availableKB, photoKB, photoCount, percent } = getLocalStorageSizeInfo();
     //const { totalKB, availableKB, photoKB, photoCount, photoBytes } = getLocalStorageSizeInfo();
     const { totalKB, availableKB, photoKB, photoCount, totalBytes, photoBytes, } = getLocalStorageSizeInfo();
-
+    const maxBytes = 5 * 1024 * 1024;
     const percent = ((totalBytes / maxBytes) * 100).toFixed(1); // ✅ Calculate percent
   
     // content.innerHTML = `
