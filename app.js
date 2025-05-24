@@ -545,7 +545,7 @@ window.addEventListener("DOMContentLoaded", () => {
         });
       };
       // reader.readAsDataURL(file);
-      compressImage(file, 0.7, base64 => {
+      compressImage(file, 0.5, base64 => {
   navigator.geolocation.getCurrentPosition(pos => {
     routeData.push({
       type: "photo",
@@ -2061,7 +2061,7 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
 
     // Alert logic
-    if (parseFloat(percent) >= 10) {
+    if (parseFloat(percent) >= 45) {
       panel.style.border = "2px solid red";
       panel.style.animation = "blink 1s infinite alternate";
       if (!alertPlayed) {
