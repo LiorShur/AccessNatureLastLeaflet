@@ -111,7 +111,7 @@
   `;
 
     // Alert logic
-    if (parseFloat(percent) >= 50) {
+    if (parseFloat(percent) >= 10) {
       panel.style.border = "2px solid red";
       panel.style.animation = "blink 1s infinite alternate";
       if (!alertPlayed) {
