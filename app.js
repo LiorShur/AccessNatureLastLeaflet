@@ -2062,17 +2062,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Alert logic
     if (parseFloat(percent) >= 45) {
-      panel.style.border = "2px solid red";
-      panel.style.animation = "blink 1s infinite alternate";
-      if (!alertPlayed) {
-        if (audio && audio.play) audio.play().catch(() => {});
-        alertPlayed = true;
-      }
-    } else {
-      panel.style.border = "";
-      panel.style.animation = "";
-      alertPlayed = false;
+      content.innerHTML += `<div style="color: yellow; margin-top: 5px;">⚠️ Approaching localStorage limit!</div>`;
+    if (!window.hasWarned) {
+      const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+      audio.play();
+      window.hasWarned = true;
     }
+  } else {
+    window.hasWarned = false;
+  }
+    //   panel.style.border = "2px solid red";
+    //   panel.style.animation = "blink 1s infinite alternate";
+    //   if (!alertPlayed) {
+    //     if (audio && audio.play) audio.play().catch(() => {});
+    //     alertPlayed = true;
+    //   }
+    // } else {
+    //   panel.style.border = "";
+    //   panel.style.animation = "";
+    //   alertPlayed = false;
+    // }
   }
 
   // Draggable
