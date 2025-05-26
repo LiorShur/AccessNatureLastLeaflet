@@ -1306,37 +1306,152 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
   const boundsVar = JSON.stringify(pathCoords);
 
   const htmlContent = `
-<!DOCTYPE html>
+// <!DOCTYPE html>
+// <html lang="en">
+// <head>
+//   <meta charset="UTF-8">
+//   <title>${name}</title>
+//   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+//   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+//   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+//   <style>
+//     body { margin: 0; font-family: Arial, sans-serif; }
+//     #map { height: 60vh; }
+//     #summaryPanel { padding: 20px; background: #f7f7f7; }
+//     #routeTitle { font-size: 24px; margin-bottom: 10px; color: #2c3e50; }
+//     .stats { margin-top: 10px; }
+//     .stats b { display: inline-block; width: 120px; }
+//     #description { margin-top: 20px; }
+//     #description textarea { width: 100%; height: 100px; font-size: 14px; }
+//     #accessibilityDetails ul { list-style-type: none; padding-left: 0; }
+//     #accessibilityDetails li { margin-bottom: 5px; }
+//   </style>
+// </head>
+// <body>
+// <div id="summaryPanel">
+//   <div id="routeTitle">📍 ${name}</div>
+//   <div class="stats">
+//     <div><b>Distance:</b> ${totalDistance.toFixed(2)} km</div>
+//     <div><b>Time:</b> ${document.getElementById("timer").textContent}</div>
+//     <div><b>Photos:</b> ${photoCounter - 1}</div>
+//     <div><b>Notes:</b> ${noteCounter - 1}</div>
+//     <div><b>Audios:</b> ${audioCounter - 1}</div>
+//   </div>
+//   <div id="description">
+//     <h4>General Description:</h4>
+//     <textarea placeholder="Add notes or observations about the route here..."></textarea>
+//   </div>
+//   <div id="accessibilityDetailsContainer"></div>
+// </div>
+
+// <div id="map"></div>
+// <script>
+// var map = L.map('map');
+// var bounds = L.latLngBounds(${boundsVar});
+// map.fitBounds(bounds);
+
+// L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+//   maxZoom: 18,
+//   attribution: '&copy; OpenStreetMap contributors'
+// }).addTo(map);
+
+// L.polyline(${JSON.stringify(pathCoords)}, { color: 'blue' }).addTo(map);
+
+// ${markersJS}
+
+// // Fullscreen photo viewer
+// function showFullScreen(img) {
+//   const overlay = document.createElement("div");
+//   overlay.style.position = "fixed";
+//   overlay.style.top = 0;
+//   overlay.style.left = 0;
+//   overlay.style.width = "100%";
+//   overlay.style.height = "100%";
+//   overlay.style.background = "rgba(0,0,0,0.9)";
+//   overlay.style.display = "flex";
+//   overlay.style.alignItems = "center";
+//   overlay.style.justifyContent = "center";
+//   overlay.style.zIndex = "9999";
+//   overlay.onclick = () => document.body.removeChild(overlay);
+
+//   const fullImg = document.createElement("img");
+//   fullImg.src = img.src;
+//   fullImg.style.maxWidth = "90%";
+//   fullImg.style.maxHeight = "90%";
+//   overlay.appendChild(fullImg);
+//   document.body.appendChild(overlay);
+// }
+// // Accessibility summary rendering
+// (function(){
+//   const data = ${accessibilityJSON};
+//   if (!data) return;
+//   const html = \`
+//     <div id="accessibilityDetails">
+//       <h3>♿ Accessibility Details</h3>
+//       <ul>
+//         <li><b>Disabled Parking:</b> \${data.disabledParkingCount}</li>
+//         <li><b>Path Type:</b> \${data.pathType}</li>
+//         <li><b>Accessible Length:</b> \${data.accessibleLength} m</li>
+//         <li><b>Route Type:</b> \${data.routeType}</li>
+//         <li><b>Slope:</b> \${data.slope}</li>
+//         <li><b>Points of Interest:</b> \${data.pointsOfInterest}</li>
+//         <li><b>Lookouts:</b> \${data.lookouts ? "Yes" : "No"}</li>
+//         <li><b>Picnic Spots:</b> \${data.picnicSpots ? "Yes" : "No"}</li>
+//         <li><b>Accessible Toilets:</b> \${data.accessibleToilets ? "Yes" : "No"}</li>
+//         <li><b>Benches:</b> \${data.benches ? "Yes" : "No"}</li>
+//         <li><b>Shade:</b> \${data.shade}</li>
+//       </ul>
+//     </div>\`;
+//   document.getElementById("accessibilityDetailsContainer").innerHTML = html;
+// })();
+// </script>
+// </body>
+// </html>
+// `;
+
+  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>${name}</title>
+  <title>${session.name}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
   <style>
     body { margin: 0; font-family: Arial, sans-serif; }
     #map { height: 60vh; }
-    #summaryPanel { padding: 20px; background: #f7f7f7; }
-    #routeTitle { font-size: 24px; margin-bottom: 10px; color: #2c3e50; }
+    #summaryPanel {
+      padding: 20px;
+      background: #f7f7f7;
+    }
+    #routeTitle {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
     .stats { margin-top: 10px; }
     .stats b { display: inline-block; width: 120px; }
     #description { margin-top: 20px; }
-    #description textarea { width: 100%; height: 100px; font-size: 14px; }
+    #description textarea {
+      width: 100%;
+      height: 100px;
+      font-size: 14px;
+    }
     #accessibilityDetails ul { list-style-type: none; padding-left: 0; }
     #accessibilityDetails li { margin-bottom: 5px; }
   </style>
 </head>
 <body>
 <div id="summaryPanel">
-  <div id="routeTitle">📍 ${name}</div>
+  <div id="routeTitle">📍 ${session.name}</div>
   <div class="stats">
-    <div><b>Distance:</b> ${totalDistance.toFixed(2)} km</div>
-    <div><b>Time:</b> ${document.getElementById("timer").textContent}</div>
+    <div><b>Distance:</b> ${session.distance} km</div>
+    <div><b>Time:</b> ${session.time}</div>
     <div><b>Photos:</b> ${photoCounter - 1}</div>
     <div><b>Notes:</b> ${noteCounter - 1}</div>
     <div><b>Audios:</b> ${audioCounter - 1}</div>
   </div>
+  
   <div id="description">
     <h4>General Description:</h4>
     <textarea placeholder="Add notes or observations about the route here..."></textarea>
@@ -1381,6 +1496,7 @@ function showFullScreen(img) {
   overlay.appendChild(fullImg);
   document.body.appendChild(overlay);
 }
+
 // Accessibility summary rendering
 (function(){
   const data = ${accessibilityJSON};
