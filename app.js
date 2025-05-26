@@ -825,47 +825,6 @@ window.loadSession = function (index) {
 };
 
 // === LOAD SESSION + IndexDB===
-// window.loadSession = async function (index) {
-//   const sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
-//   const session = sessions[index];
-
-//   if (!session || !session.data || session.data.length === 0) {
-//     alert("❌ This session has no data to export.");
-//     return;
-//   }
-
-//   routeData = [];
-//   for (const entry of session.data) {
-//     if (entry.mediaId) {
-//       try {
-//         const base64 = await getMediaFromIndexedDB(entry.mediaId);
-//         routeData.push({ ...entry, content: base64 });
-//       } catch {
-//         routeData.push({ ...entry, content: null });
-//       }
-//     } else {
-//       routeData.push(entry);
-//     }
-//   }
-
-//   totalDistance = parseFloat(session.distance);
-//   elapsedTime = 0;
-//   lastCoords = null;
-
-//   path = routeData.filter(e => e.type === "location").map(e => e.coords);
-
-//   document.getElementById("timer").textContent = session.time;
-//   document.getElementById("distance").textContent = totalDistance.toFixed(2) + " km";
-
-//   initMap(() => {
-//     drawSavedRoutePath();
-//     showRouteDataOnMap();
-//     setTrackingButtonsEnabled(false);
-//   });
-
-//   //document.getElementById("exportSummaryBtn").disabled = false;
-// };
-
 
 function drawSavedRoutePath() {
   if (!map || path.length === 0) return;
@@ -2207,44 +2166,6 @@ function showPhotoCleanupDialog() {
     }
   });
 }
-
-// function showPhotoCleanupDialog() {
-//   const photos = getLocalStoragePhotos();
-//   if (photos.length === 0) return alert("No stored images found.");
-
-//   const overlay = document.createElement("div");
-//   overlay.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:#000A;z-index:9999;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;overflow:auto;";
-  
-//   photos.forEach(({ key, value }) => {
-//     const imgWrapper = document.createElement("div");
-//     imgWrapper.style = "margin:10px;position:relative;";
-
-//     const img = document.createElement("img");
-//     img.src = value;
-//     img.style = "max-width:120px;max-height:120px;border:2px solid white;border-radius:4px;";
-    
-//     const delBtn = document.createElement("button");
-//     delBtn.textContent = "🗑️";
-//     delBtn.style = "position:absolute;top:0;right:0;background:red;color:white;border:none;border-radius:3px;";
-//     delBtn.onclick = () => {
-//       localStorage.removeItem(key);
-//       imgWrapper.remove();
-//     };
-
-//     imgWrapper.appendChild(img);
-//     imgWrapper.appendChild(delBtn);
-//     overlay.appendChild(imgWrapper);
-//   });
-
-//   const closeBtn = document.createElement("button");
-//   closeBtn.textContent = "Close";
-//   closeBtn.style = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 20px;background:black;color:white;border:1px solid white;";
-//   closeBtn.onclick = () => document.body.removeChild(overlay);
-
-//   overlay.appendChild(closeBtn);
-//   document.body.appendChild(overlay);
-// }
-
 
 window.triggerImport = () => {
   document.getElementById("importFile").click();
