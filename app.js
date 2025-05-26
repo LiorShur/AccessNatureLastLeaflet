@@ -1549,11 +1549,7 @@ L.marker([${entry.coords.lat}, ${entry.coords.lng}])
     <div><b>Notes:</b> ${noteCounter - 1}</div>
     <div><b>Audios:</b> ${audioCounter - 1}</div>
   </div>
-  // Inject accessibility content
-const accessibilityEntry = routeData.find(e => e.type === "accessibility");
-const accessibilityHTML = generateAccessibilityHTML(accessibilityEntry ? accessibilityEntry.content : null);
-document.getElementById("summaryPanel").innerHTML += accessibilityHTML;
-
+  
   <div id="description">
     <h4>General Description:</h4>
     <textarea placeholder="Add notes or observations about the route here..."></textarea>
